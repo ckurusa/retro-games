@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>레트로 게임 놀이터</title>
+<meta name="description" content="설치 없이 브라우저에서 바로 즐기는 미니게임 모음">
+<meta property="og:title" content="레트로 게임 놀이터">
+<meta property="og:description" content="설치 없이 브라우저에서 바로 즐기는 미니게임 모음">
+<style>
+:root{--bg:#0b1020;--card:rgba(255,255,255,.06);--card2:rgba(255,255,255,.11);--line:rgba(255,255,255,.14);--text:#eef1ff;--mute:#9aa4c7;--gold:#fbbf24}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--text);font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;touch-action:manipulation}
+body{min-height:100vh;background:radial-gradient(1000px 520px at 12% -8%,rgba(124,92,255,.28),transparent 60%),radial-gradient(900px 480px at 100% 0,rgba(34,211,238,.16),transparent 60%),var(--bg);background-attachment:fixed}
+.app{max-width:1000px;margin:0 auto;padding:28px 16px 40px}
+header{text-align:center;margin-bottom:26px}
+h1{margin:0;font-size:clamp(32px,7vw,56px);font-weight:900;letter-spacing:-.02em;line-height:1.1;background:linear-gradient(120deg,#fff 10%,#b9a8ff 45%,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:10px 0 0;color:var(--mute);font-size:clamp(14px,2.2vw,18px)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.card{position:relative;display:flex;flex-direction:column;gap:8px;min-height:190px;padding:20px;border-radius:22px;border:1px solid var(--line);text-decoration:none;color:var(--text);overflow:hidden;
+  background:linear-gradient(160deg,var(--card2),var(--card));transition:transform .15s,box-shadow .15s,border-color .15s}
+.card::before{content:"";position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c2));opacity:.3;filter:blur(10px)}
+.card:hover{transform:translateY(-4px);border-color:var(--c1);box-shadow:0 14px 34px -14px var(--c1)} .card:active{transform:scale(.98)}
+.ic{position:relative;width:60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,var(--c1),var(--c2))}
+.card h2{position:relative;margin:6px 0 0;font-size:clamp(19px,2.6vw,22px)} .card p{position:relative;margin:0;color:var(--mute);font-size:14px;line-height:1.55;flex:1}
+.meta{position:relative;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tag{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--card2);color:var(--mute)}
+.hi{position:relative;color:var(--gold);font-weight:700;font-size:13px;min-height:1.2em}
+.new{position:absolute;right:14px;top:14px;background:#e11d48;color:#fff;font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px 0}
+footer{margin-top:30px;text-align:center;color:var(--mute);font-size:13px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>레트로 게임 놀이터</h1>
+    <p>설치 없이 PC와 모바일에서 바로 즐겨요</p>
+  </header>
+  <main class="grid" id="grid"></main>
+  <footer>게임을 고르면 바로 시작해요 · 하이스코어는 이 기기의 브라우저에만 저장돼요</footer>
+</div>
+<script src="games.js"></script>
+<script>
+(() => {
+  'use strict';
+  const grid = document.getElementById('grid');
+  const readHi = (g) => { try { const v = localStorage.getItem(g.hiKey); return v ? JSON.parse(v) : 0; } catch (e) { return 0; } };
+  const list = window.GAMES || [];
+  if (!list.length) grid.innerHTML = '<div class="empty">아직 등록된 게임이 없어요.</div>';
+  list.forEach(g => {
+    const a = document.createElement('a'); a.className = 'card'; a.href = g.path;
+    a.style.setProperty('--c1', g.colors[0]); a.style.setProperty('--c2', g.colors[1]);
+    const hi = g.hiKey ? readHi(g) : 0;
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+    if (g.isNew) a.appendChild(el('span', 'new', 'NEW'));
+    a.appendChild(el('div', 'ic', g.icon)); a.appendChild(el('h2', '', g.title)); a.appendChild(el('p', '', g.desc));
+    const meta = el('div', 'meta'); g.tags.forEach(t => meta.appendChild(el('span', 'tag', t))); a.appendChild(meta);
+    a.appendChild(el('div', 'hi', hi && g.hiLabel ? g.hiLabel(hi) : ''));
+    grid.appendChild(a);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# 공개하지 않는 파일 (로컬에는 그대로 남는다)
+legacy/
+CLAUDE.md
+**/post.md
+.claude/
+Thumbs.db
+desktop.ini

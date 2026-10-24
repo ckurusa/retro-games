@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>타닥타닥 던전 - 타자 수련 RPG</title>
+<meta name="description" content="낱말 배틀, 자리 연습, 책 읽기, 스피드런까지. 설치 없이 브라우저에서 바로 하는 한글 타자 연습 게임!">
+<meta property="og:title" content="타닥타닥 던전 - 타자 수련 RPG">
+<meta property="og:description" content="낱말 배틀, 자리 연습, 책 읽기, 스피드런까지. 설치 없이 바로 플레이!">
+<meta property="og:image" content="thumbnail.png">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#0b1020; --card:rgba(255,255,255,.06); --card2:rgba(255,255,255,.11); --line:rgba(255,255,255,.14);
+  --text:#eef1ff; --mute:#9aa4c7; --acc:#7c5cff; --acc2:#22d3ee; --ok:#34d399; --bad:#fb7185; --gold:#fbbf24;
+  --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--text);
+  font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none}
+body{min-height:100vh;background:radial-gradient(1000px 520px at 12% -8%,rgba(124,92,255,.28),transparent 60%),
+  radial-gradient(900px 480px at 100% 0,rgba(34,211,238,.16),transparent 60%),var(--bg);background-attachment:fixed}
+.app{max-width:1000px;margin:0 auto;padding:12px 16px 32px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.top .brand{flex:1;text-align:center;font-weight:800;letter-spacing:.02em;font-size:clamp(15px,2.4vw,19px);color:var(--mute)}
+.top .brand b{color:var(--text)}
+.btn{min-width:56px;min-height:48px;padding:10px 18px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:var(--text);
+  font:inherit;font-weight:700;font-size:clamp(15px,2.1vw,17px);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .08s,background .15s,border-color .15s}
+.btn:hover{background:rgba(255,255,255,.17)} .btn:active{transform:scale(.97)}
+.btn.go{background:linear-gradient(135deg,var(--acc),#5b8cff);border-color:transparent}
+.btn.go:hover{filter:brightness(1.1)} .btn.warn{background:#be123c;border-color:transparent}
+.btn.ghost{background:transparent}
+.btn svg,.ic svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.screen[hidden]{display:none}
+.hero{text-align:center;margin:10px 0 26px}
+.hero h1{margin:0;font-size:clamp(34px,7vw,60px);line-height:1.1;font-weight:900;letter-spacing:-.02em;
+  background:linear-gradient(120deg,#fff 10%,#b9a8ff 45%,var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:10px 0 0;color:var(--mute);font-size:clamp(14px,2.2vw,18px);line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{position:relative;text-align:left;padding:20px;border-radius:20px;border:1px solid var(--line);color:var(--text);font:inherit;cursor:pointer;
+  background:linear-gradient(160deg,var(--card2),var(--card));min-height:150px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-content:start;
+  transition:transform .15s,border-color .15s,box-shadow .15s;overflow:hidden}
+.card::after{content:"";position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:var(--a);opacity:.16;filter:blur(8px)}
+.card:hover{transform:translateY(-3px);border-color:var(--a);box-shadow:0 10px 30px -12px var(--a)} .card:active{transform:scale(.98)}
+.card .ic{grid-row:span 3;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:var(--a);color:#fff;font-size:26px}
+.card h2{margin:0;font-size:clamp(18px,2.6vw,22px)} .card p{margin:0;color:var(--mute);font-size:clamp(13px,1.9vw,15px);line-height:1.5}
+.card small{color:var(--gold);font-weight:700;min-height:1.2em}
+.tips{margin:22px auto 0;max-width:760px;color:var(--mute);font-size:clamp(13px,1.8vw,15px);line-height:1.8;text-align:center}
+.tips b{color:var(--text)}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 auto 10px;font-weight:700;font-size:clamp(14px,2vw,17px)}
+.hud .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--mute)}
+.hud .pill b{color:var(--text)} .hud .sp{flex:1}
+.stage{position:relative;width:min(100%,calc((100vh - 250px)*16/9));width:min(100%,calc((100dvh - 250px)*16/9));min-width:min(100%,360px);margin:0 auto;aspect-ratio:16/9;
+  container-type:inline-size;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 20px 50px -20px rgba(124,92,255,.6),0 0 0 4px rgba(255,255,255,.03)}
+.stage canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+#labels{position:absolute;inset:0;pointer-events:none}
+.lbl{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-weight:800;font-size:clamp(12px,3.4cqw,26px);padding:.12em .7em;
+  background:rgba(11,16,32,.82);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.lbl.hot{border-color:var(--gold);box-shadow:0 0 0 2px rgba(251,191,36,.35)} .lbl.ready{border-color:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,.45)} .lbl b{color:var(--ok)}
+#banner{position:absolute;left:0;right:0;top:34%;text-align:center;font-weight:900;font-size:clamp(22px,8cqw,56px);color:#fff;letter-spacing:.06em;
+  text-shadow:0 4px 24px rgba(124,92,255,.9);pointer-events:none;opacity:0;transition:opacity .2s}
+#banner.on{opacity:1}
+.overlay{position:absolute;inset:0;background:rgba(11,16,32,.78);backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;font-size:clamp(20px,6cqw,38px);font-weight:900}
+.overlay[hidden]{display:none}
+.inputRow{max-width:720px;margin:14px auto 0;display:flex;gap:10px}
+.field{flex:1;min-height:60px;font:inherit;font-size:clamp(20px,3.2vw,28px);font-weight:700;padding:8px 20px;color:var(--text);background:var(--card);
+  border:2px solid var(--line);border-radius:16px;outline:none;-webkit-user-select:text;user-select:text;transition:border-color .15s,box-shadow .15s}
+.field:focus{border-color:var(--acc);box-shadow:0 0 0 4px rgba(124,92,255,.25)} .field.bad{border-color:var(--bad);animation:shake .2s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.hint{text-align:center;color:var(--mute);font-size:clamp(12px,1.7vw,14px);margin-top:10px}
+.panel{max-width:780px;margin:0 auto} .panel h2{text-align:center;margin:6px 0 4px;font-size:clamp(20px,3vw,26px)}
+.lead{text-align:center;color:var(--mute);margin:4px 0 16px;font-size:clamp(13px,1.9vw,16px);line-height:1.6}
+.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:14px 0}
+.sc{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:14px 16px;text-align:left;font:inherit;color:var(--text);cursor:pointer;min-height:92px;transition:transform .12s,border-color .12s}
+.sc:hover:not([disabled]){border-color:var(--acc);transform:translateY(-2px)} .sc[disabled]{opacity:.45;cursor:not-allowed}
+.sc h3{margin:0 0 4px;font-size:clamp(15px,2.1vw,18px)} .sc p{margin:0;color:var(--mute);font-size:13px;line-height:1.5} .sc .st{color:var(--gold);margin-top:6px;letter-spacing:2px;font-size:15px}
+.bookHead{margin:22px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap} .bookHead h3{margin:0;font-size:clamp(18px,2.6vw,22px)} .bookHead span{color:var(--mute);font-size:14px}
+.big{text-align:center;margin:10px 0}
+.target{font-size:clamp(64px,16vw,140px);font-weight:900;line-height:1.1;min-height:1.1em;background:linear-gradient(120deg,#fff,#c9b8ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 24px rgba(124,92,255,.5))}
+.target.shake{animation:shake .2s}
+.finger{color:var(--acc2);font-weight:700;font-size:clamp(14px,2.2vw,19px);min-height:1.5em}
+.bar{height:10px;background:var(--card);border-radius:999px;overflow:hidden;margin:8px 0;position:relative}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:999px;transition:width .12s}
+.bar i.ghost{position:absolute;left:0;top:0;background:rgba(251,191,36,.55);transition:none}
+.kb{max-width:780px;margin:14px auto 0}
+.krow{display:flex;gap:6px;margin-bottom:6px;justify-content:center}
+.key{flex:0 0 9%;min-width:0;height:clamp(44px,8vw,62px);border:1px solid var(--line);border-bottom:3px solid var(--fc,var(--line));border-radius:10px;background:var(--card2);color:var(--text);
+  font:inherit;font-weight:700;font-size:clamp(14px,2.5vw,22px);position:relative;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;transition:transform .08s}
+.key small{position:absolute;top:2px;right:6px;font-size:.55em;color:var(--mute)} .key.wide{flex:0 0 14%;font-size:clamp(11px,1.8vw,14px)}
+.key.f0,.key.f7{--fc:#fb923c} .key.f1,.key.f6{--fc:#fbbf24} .key.f2,.key.f5{--fc:#34d399} .key.f3,.key.f4{--fc:#22d3ee}
+.key.target{background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1200;border-color:transparent;animation:pulse .6s infinite alternate} .key.on{background:var(--acc)}
+@keyframes pulse{to{transform:scale(1.08)}}
+.runbox{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:clamp(14px,3vw,26px);margin:12px 0;min-height:200px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.rl{font-size:clamp(17px,2.8vw,24px);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-wrap;min-width:0}
+.rl.prev,.rl.nx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rl.cur{white-space:pre;overflow:hidden} .rl.cur.wrap{white-space:pre-wrap}
+.rl.prev{color:var(--mute);opacity:.45} .rl.nx{color:var(--mute);opacity:.8} .rl.nx2{opacity:.4}
+.rl.cur{font-size:clamp(20px,3.4vw,30px);font-weight:700;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--mute)}
+.rl.cur.ready{border-top-color:var(--ok);border-bottom-color:var(--ok)} .rl.cur .ok{color:var(--ok)} .rl.cur .bad{color:var(--bad);text-decoration:underline wavy} .rl.cur .cur{background:rgba(124,92,255,.5);color:#fff;border-radius:4px}
+.live{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.live .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700;color:var(--mute)} .live b{color:var(--text)}
+.legend{display:flex;gap:14px;justify-content:center;color:var(--mute);font-size:12px}
+.legend i{display:inline-block;width:18px;height:6px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.res{max-width:560px;margin:10px auto 0;text-align:center;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:24px;padding:26px 22px;box-shadow:0 24px 60px -24px rgba(124,92,255,.7)}
+.res h2{margin:0;font-size:clamp(18px,3vw,24px);color:var(--mute);font-weight:700}
+.rank{font-size:clamp(72px,18vw,116px);font-weight:900;line-height:1.15;margin:8px 0}
+.rank.small{font-size:clamp(48px,12vw,76px)}
+.rank.S{background:linear-gradient(120deg,#fde68a,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.rank.A{color:var(--ok)} .rank.B{color:var(--acc2)} .rank.C{color:var(--mute)}
+.rows div{display:flex;justify-content:space-between;padding:11px 4px;border-bottom:1px solid var(--line);font-size:clamp(15px,2.2vw,18px);color:var(--mute)} .rows b{color:var(--text)}
+.note{color:var(--gold);font-weight:700;min-height:1.5em;margin:14px 0 4px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#be123c;color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;
+  transition:opacity .2s;max-width:90vw;text-align:center;z-index:9;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#toast.show{opacity:1}
+@media (max-width:560px){.cards{grid-template-columns:1fr}.card{min-height:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="btn ghost" id="btnHome" aria-label="시작 화면으로"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>홈</button>
+    <div class="brand"><b>타닥타닥</b> 던전</div>
+    <button class="btn ghost" id="btnSnd" aria-label="소리 켜기/끄기"></button>
+  </header>
+
+  <main>
+    <!-- 메뉴 -->
+    <section id="scr-menu" class="screen">
+      <div class="hero"><h1>타닥타닥 던전</h1><p>몬스터를 물리치며 타자 실력을 키우는 한글 타자 수련 게임<br>설치 없이 PC와 태블릿에서 바로 시작하세요</p></div>
+      <div class="cards">
+        <button class="card" id="goBattle" style="--a:#e11d48"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><h2>낱말 배틀</h2><p>다가오는 몬스터의 낱말을 쳐서 물리쳐요</p><small id="recBattle"></small></button>
+        <button class="card" id="goDrill" style="--a:#4f6bff"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></span><h2>자리 연습</h2><p>손가락 위치를 단계별로 익혀요</p><small id="recDrill"></small></button>
+        <button class="card" id="goBook" style="--a:#0d9488"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg></span><h2>책 읽기</h2><p>시와 이야기를 한 줄씩 따라 치며 완독해요</p><small id="recBook"></small></button>
+        <button class="card" id="goSpeed" style="--a:#f59e0b"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></span><h2>스피드런</h2><p>애국가·시를 최단시간에! 내 기록과 경쟁해요</p><small id="recSpeed"></small></button>
+        <button class="card" id="goSent" style="--a:#8b5cf6"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></span><h2>문장 도전</h2><p>속담 5문장을 빠르고 정확하게</p><small id="recSent"></small></button>
+      </div>
+      <div class="tips"><b>시작 전에</b> 한/영 키로 <b>한글 입력 상태</b>인지 확인하세요 · PC 키보드를 권장하며, 태블릿은 화면 키보드로도 가능해요 · 낱말 배틀은 <b>Esc</b>로 일시정지</div>
+    </section>
+
+    <!-- 낱말 배틀 -->
+    <section id="scr-battle" class="screen" hidden>
+      <div class="hud">
+        <button class="btn" id="bMenu">← 메뉴</button>
+        <span class="pill" id="hHearts"></span><span class="pill">STAGE <b id="hStage">1</b></span><span class="pill">점수 <b id="hScore">0</b></span><span class="pill">콤보 <b id="hCombo">0</b></span>
+        <i class="sp"></i><button class="btn" id="btnPause" aria-label="일시정지"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="cv" width="320" height="180"></canvas>
+        <div id="labels"></div>
+        <div id="banner"></div>
+        <div class="overlay" id="pause" hidden>
+          <div>일시정지</div>
+          <button class="btn go" id="pResume">계속하기</button>
+          <button class="btn" id="pQuit">메뉴로</button>
+        </div>
+      </div>
+      <div class="inputRow"><input class="field" id="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="여기에 낱말을 입력하세요"></div>
+      <div class="hint" id="hintBattle"></div>
+    </section>
+
+    <!-- 자리 연습 -->
+    <section id="scr-drillSel" class="screen" hidden>
+      <div class="panel">
+        <button class="btn" data-go="menu">← 메뉴</button>
+        <h2>자리 연습</h2><p class="lead">앞 단계를 별 1개 이상으로 클리어하면 다음 단계가 열려요.</p>
+        <div class="list" id="drillList"></div>
+      </div>
+    </section>
+    <section id="scr-drill" class="screen" hidden>
+      <div class="panel">
+        <div class="hud"><button class="btn" id="dBack">← 단계</button><span class="pill" id="dName"></span><span class="pill">정확도 <b id="dAcc">100%</b></span><span class="pill">콤보 <b id="dCombo">0</b></span></div>
+        <div class="bar"><i id="dBar"></i></div>
+        <div class="big"><div class="target" id="dTarget">ㅁ</div><div class="finger" id="dFinger"></div></div>
+        <div class="kb" id="kb"></div>
+        <div class="hint">빛나는 키를 눌러요. 키 아래 선 색이 담당 손가락이에요 (한/영 상태와 상관없이 동작)</div>
+      </div>
+    </section>
+
+    <!-- 책 읽기 -->
+    <section id="scr-bookSel" class="screen" hidden>
+      <div class="panel">
+        <button class="btn" data-go="menu">← 메뉴</button>
+        <h2>책 읽기</h2><p class="lead">한 줄씩 따라 치면서 끝까지 읽어 보세요. 모든 장을 마치면 완독 카드를 받아요.</p>
+        <div id="bookList"></div>
+      </div>
+    </section>
+
+    <!-- 스피드런 -->
+    <section id="scr-speedSel" class="screen" hidden>
+      <div class="panel">
+        <button class="btn" data-go="menu">← 메뉴</button>
+        <h2>스피드런</h2><p class="lead">정확도 90% 이상으로 끝까지 쳐야 기록돼요. 노란 막대가 내 최고 기록의 속도예요.</p>
+        <div class="list" id="speedList"></div>
+      </div>
+    </section>
+
+    <!-- 글 연습 (문장 도전·책 읽기·스피드런 공용) -->
+    <section id="scr-run" class="screen" hidden>
+      <div class="panel">
+        <div class="hud"><button class="btn" id="rBack">← 나가기</button><span class="pill" id="rTitle"></span><span class="sp"></span><span class="pill"><b id="rNum">1/5</b> 줄</span></div>
+        <div class="bar"><i id="rBar"></i><i class="ghost" id="rGhost" style="display:none"></i></div>
+        <div class="runbox" id="runView"></div>
+        <div class="inputRow" style="max-width:none"><input class="field" id="rInp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="위 줄을 그대로 입력하세요"></div>
+        <div class="live"><span class="pill">시간 <b id="rTime">0.0초</b></span><span class="pill">속도 <b id="rCpm">0</b> 타/분</span></div>
+        <div class="hint" id="rHint"></div>
+      </div>
+    </section>
+
+    <!-- 결과 -->
+    <section id="scr-result" class="screen" hidden>
+      <div class="res">
+        <h2 id="rsTitle"></h2>
+        <div class="rank" id="rsRank">S</div>
+        <div class="rows" id="rsRows"></div>
+        <div class="note" id="rsNote"></div>
+        <div class="btns">
+          <button class="btn go" id="rsRetry">다시 도전</button>
+          <button class="btn" id="rsCopy">결과 복사</button>
+          <button class="btn" id="rsImg">카드 이미지 저장</button>
+          <button class="btn ghost" id="rsMenu">메뉴</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ===== 설정 / 팔레트 =====
+const GAME_ID = 'tadak-dungeon';
+const K = { hi: `retro_${GAME_ID}_hi`, drill: `retro_${GAME_ID}_drill`, sent: `retro_${GAME_ID}_sent`, mute: `retro_${GAME_ID}_mute`,
+  book: `retro_${GAME_ID}_book`, speed: `retro_${GAME_ID}_speed` };
+const W = 320, H = 180, STEP = 1 / 60;
+const LANES = [92, 128, 164], HERO_X = 30, MAX_HP = 3, KILLS_PER_STAGE = 8;
+// 낱말 배틀 도트 팔레트 (16색 이하)
+const PAL = { '.': null, D: '#1a1c2c', P: '#5d275d', R: '#b13e53', O: '#ef7d57', Y: '#ffcd75', L: '#a7f070', G: '#38b764',
+  T: '#257179', N: '#29366f', B: '#3b5dc9', S: '#41a6f6', C: '#73eff7', W: '#f4f4f4', g: '#94b0c2', d: '#566c86', e: '#333c57' };
+
+// ===== 저장 (실패해도 게임은 동작) =====
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 저장 불가 환경 */ } }
+};
+
+// ===== 한글 유틸 (자소 분해) =====
+const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const SPLIT = { 'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'ㅜㅔ','ㅟ':'ㅜㅣ','ㅢ':'ㅡㅣ',
+  'ㄳ':'ㄱㅅ','ㄵ':'ㄴㅈ','ㄶ':'ㄴㅎ','ㄺ':'ㄹㄱ','ㄻ':'ㄹㅁ','ㄼ':'ㄹㅂ','ㄽ':'ㄹㅅ','ㄾ':'ㄹㅌ','ㄿ':'ㄹㅍ','ㅀ':'ㄹㅎ','ㅄ':'ㅂㅅ' };
+// 글자를 실제로 눌러야 하는 자판 순서(자소)로 풀어 준다. 조합 중인 글자도 접두어 비교가 가능하다.
+function toJamo(str) {
+  let out = '';
+  for (const ch of str.normalize('NFC')) {
+    const c = ch.charCodeAt(0);
+    if (c >= 0xAC00 && c <= 0xD7A3) {
+      const n = c - 0xAC00;
+      const cho = CHO[Math.floor(n / 588)], jung = JUNG[Math.floor((n % 588) / 28)], jong = JONG[n % 28];
+      out += (SPLIT[cho] || cho) + (SPLIT[jung] || jung) + (SPLIT[jong] || jong);
+    } else out += SPLIT[ch] || ch;
+  }
+  return out;
+}
+const esc = (s) => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+// 초 -> "42.3초" 또는 "1:05.2"
+function fmt(sec) { const m = Math.floor(sec / 60), s = (sec % 60).toFixed(1); return m ? `${m}:${s.padStart(4, '0')}` : `${s}초`; }
+
+// ===== 자판 데이터 (두벌식) =====
+const KEYMAP = { KeyQ:['ㅂ','ㅃ'],KeyW:['ㅈ','ㅉ'],KeyE:['ㄷ','ㄸ'],KeyR:['ㄱ','ㄲ'],KeyT:['ㅅ','ㅆ'],KeyY:['ㅛ','ㅛ'],KeyU:['ㅕ','ㅕ'],KeyI:['ㅑ','ㅑ'],KeyO:['ㅐ','ㅒ'],KeyP:['ㅔ','ㅖ'],
+  KeyA:['ㅁ','ㅁ'],KeyS:['ㄴ','ㄴ'],KeyD:['ㅇ','ㅇ'],KeyF:['ㄹ','ㄹ'],KeyG:['ㅎ','ㅎ'],KeyH:['ㅗ','ㅗ'],KeyJ:['ㅓ','ㅓ'],KeyK:['ㅏ','ㅏ'],KeyL:['ㅣ','ㅣ'],
+  KeyZ:['ㅋ','ㅋ'],KeyX:['ㅌ','ㅌ'],KeyC:['ㅊ','ㅊ'],KeyV:['ㅍ','ㅍ'],KeyB:['ㅠ','ㅠ'],KeyN:['ㅜ','ㅜ'],KeyM:['ㅡ','ㅡ'] };
+const FINGER = { KeyQ:0,KeyA:0,KeyZ:0,KeyW:1,KeyS:1,KeyX:1,KeyE:2,KeyD:2,KeyC:2,KeyR:3,KeyT:3,KeyF:3,KeyG:3,KeyV:3,KeyB:3,
+  KeyY:4,KeyU:4,KeyH:4,KeyJ:4,KeyN:4,KeyM:4,KeyI:5,KeyK:5,KeyO:6,KeyL:6,KeyP:7 };
+const FINGER_NAME = ['왼손 새끼','왼손 약지','왼손 중지','왼손 검지','오른손 검지','오른손 중지','오른손 약지','오른손 새끼'];
+const KB_ROWS = [['KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP'],
+  ['KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL'], ['Shift','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM']];
+const row = (a) => a.split(' ').map(c => 'Key' + c);
+const DRILL = [
+  { name: '기본 자리', desc: '가운데 줄 ㅁㄴㅇㄹㅎㅗㅓㅏㅣ', codes: row('A S D F G H J K L') },
+  { name: '윗줄', desc: 'ㅂㅈㄷㄱㅅㅛㅕㅑㅐㅔ', codes: row('Q W E R T Y U I O P') },
+  { name: '아랫줄', desc: 'ㅋㅌㅊㅍㅠㅜㅡ', codes: row('Z X C V B N M') },
+  { name: '전체 섞기', desc: '모든 글쇠를 골고루', codes: Object.keys(KEYMAP) },
+  { name: '쌍자음 · Shift', desc: 'Shift와 함께 ㅃㅉㄸㄲㅆㅒㅖ', codes: row('Q W E R T O P'), shift: true }
+];
+const DRILL_LEN = 25;
+
+// ===== 낱말 / 글 데이터 =====
+const WORDS = {
+  short: ['하늘','바다','나무','구름','별빛','용사','마법','보물','불꽃','바람','얼음','번개','숲속','성문','검사','기사','달빛','모험','비밀','열쇠','왕관','횃불','동굴','안개','파도','노을'],
+  mid: ['고양이','도깨비','드래곤','마법사','대장간','수호자','던전','지하실','불사조','유니콘','나침반','등대지기','해바라기','무지개','반딧불','도토리','솜사탕','딸기잼','보물상자','방패'],
+  long: ['반짝이는별빛','신비로운숲속','용감한모험가','달빛아래정원','전설의보물상자','마법의열쇠','깊은바닷속','불타는화산','얼어붙은호수','바람의속삭임','빛나는왕관','잊혀진왕국']
+};
+const SENTENCES = ['가는 말이 고와야 오는 말이 곱다.','낮말은 새가 듣고 밤말은 쥐가 듣는다.','티끌 모아 태산.','천 리 길도 한 걸음부터.','우물 안 개구리.',
+  '호랑이도 제 말 하면 온다.','세 살 버릇 여든까지 간다.','백지장도 맞들면 낫다.','소 잃고 외양간 고친다.','아는 길도 물어 가라.','원숭이도 나무에서 떨어진다.','돌다리도 두들겨 보고 건너라.'];
+// 저작권이 만료된 작품과 직접 쓴 이야기. 공개 전에 원문과 대조해 오탈자를 확인할 것.
+const REFRAIN = ['무궁화 삼천리 화려강산', '대한 사람 대한으로 길이 보전하세'];
+const ANTHEM = [
+  ['동해물과 백두산이 마르고 닳도록', '하느님이 보우하사 우리나라 만세'].concat(REFRAIN),
+  ['남산 위에 저 소나무 철갑을 두른 듯', '바람서리 불변함은 우리 기상일세'].concat(REFRAIN),
+  ['가을 하늘 공활한데 높고 구름 없이', '밝은 달은 우리 가슴 일편단심일세'].concat(REFRAIN),
+  ['이 기상과 이 맘으로 충성을 다하여', '괴로우나 즐거우나 나라 사랑하세'].concat(REFRAIN)
+];
+const POEMS = {
+  seosi: ['죽는 날까지 하늘을 우러러', '한 점 부끄럼이 없기를,', '잎새에 이는 바람에도', '나는 괴로워했다.', '별을 노래하는 마음으로', '모든 죽어가는 것을 사랑해야지', '그리고 나한테 주어진 길을', '걸어가야겠다.', '오늘 밤에도 별이 바람에 스치운다.'],
+  road: ['내를 건너서 숲으로', '고개를 넘어서 마을로', '어제도 가고 오늘도 갈', '나의 길 새로운 길', '민들레가 피고 까치가 날고', '아가씨가 지나고 바람이 일고', '나의 길은 언제나 새로운 길', '오늘도... 내일도...', '내를 건너서 숲으로', '고개를 넘어서 마을로'],
+  azalea: ['나 보기가 역겨워', '가실 때에는', '말없이 고이 보내 드리오리다.', '영변에 약산', '진달래꽃', '아름 따다 가실 길에 뿌리오리다.', '가시는 걸음 걸음', '놓인 그 꽃을', '사뿐히 즈려밟고 가시옵소서.', '나 보기가 역겨워', '가실 때에는', '죽어도 아니 눈물 흘리오리다.'],
+  river: ['엄마야 누나야 강변 살자', '뜰에는 반짝이는 금모래 빛', '뒷문 밖에는 갈잎의 노래', '엄마야 누나야 강변 살자.']
+};
+const BOOKS = [
+  { id: 'poems', title: '별과 꽃의 시', author: '윤동주 · 김소월', chapters: [
+    { title: '서시 (윤동주)', lines: POEMS.seosi }, { title: '새로운 길 (윤동주)', lines: POEMS.road },
+    { title: '진달래꽃 (김소월)', lines: POEMS.azalea }, { title: '엄마야 누나야 (김소월)', lines: POEMS.river } ] },
+  { id: 'moon', title: '해와 달이 된 오누이', author: '전래동화 · 다시 쓴 이야기', chapters: [
+    { title: '1장 산길에서 만난 호랑이', lines: ['옛날 옛적에 깊은 산골에 오누이와 어머니가 살았어요.', '어느 날 어머니는 떡을 팔러 고개 너머 마을에 갔어요.', '해가 저물어 돌아오는 길에 커다란 호랑이가 나타났어요.', '호랑이는 떡을 하나 주면 잡아먹지 않겠다고 말했어요.', '어머니는 떡을 하나씩 내주며 고개를 넘었지만 떡은 금세 바닥났어요.'] },
+    { title: '2장 오누이의 꾀', lines: ['호랑이는 어머니 옷을 입고 오누이의 집 문을 두드렸어요.', '오빠는 문틈으로 손을 보고 어머니가 아니라는 걸 알아챘어요.', '오누이는 뒷문으로 달아나 높은 나무 위로 올라갔어요.', '호랑이가 어떻게 올라갔느냐고 묻자 누이는 참기름을 바르고 올랐다고 했어요.'] },
+    { title: '3장 하늘의 동아줄', lines: ['오누이가 간절히 빌자 하늘에서 튼튼한 동아줄이 내려왔어요.', '오누이는 줄을 타고 하늘 높이 올라갔어요.', '호랑이도 따라 빌었지만 썩은 줄이 내려와 떨어지고 말았어요.', '하늘에 오른 누이는 달이 되고 오빠는 해가 되었어요.', '그래서 지금도 낮에는 해가, 밤에는 달이 우리를 비춘대요.'] } ] }
+];
+const SPEED = [
+  { id: 'anthem1', title: '애국가 1절', lines: ANTHEM[0] }, { id: 'anthem', title: '애국가 전곡 (1~4절)', lines: [].concat(...ANTHEM) },
+  { id: 'seosi', title: '서시', lines: POEMS.seosi }, { id: 'azalea', title: '진달래꽃', lines: POEMS.azalea }
+];
+function wordPool(stage) {
+  if (stage <= 1) return WORDS.short;
+  if (stage === 2) return WORDS.short.concat(WORDS.mid);
+  if (stage === 3) return WORDS.mid;
+  if (stage <= 5) return WORDS.mid.concat(WORDS.long);
+  return WORDS.long;
+}
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+// ===== 사운드 (WebAudio 합성) =====
+const Snd = {
+  ctx: null, master: null, muted: store.get(K.mute, false), timer: null, step: 0,
+  init() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    this.ctx = new AC(); this.master = this.ctx.createGain(); this.master.gain.value = 0.6; this.master.connect(this.ctx.destination);
+  },
+  tone(f, d, type = 'square', v = 0.06, delay = 0, to = null) {
+    if (!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime + delay, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + d + 0.03);
+  },
+  noise(d, v = 0.08) {
+    if (!this.ctx || this.muted) return;
+    const n = Math.floor(this.ctx.sampleRate * d), buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate), data = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = this.ctx.createBufferSource(), g = this.ctx.createGain(); g.gain.value = v; s.buffer = buf; s.connect(g); g.connect(this.master); s.start();
+  },
+  type() { this.tone(820 + Math.random() * 120, 0.04, 'triangle', 0.04); },
+  hit(c) { const b = 520 + Math.min(c, 12) * 28; this.tone(b, 0.08, 'square', 0.06); this.tone(b * 1.5, 0.12, 'square', 0.05, 0.06); this.noise(0.08, 0.04); },
+  miss() { this.tone(170, 0.16, 'sawtooth', 0.05, 0, 90); },
+  hurt() { this.noise(0.22, 0.09); this.tone(120, 0.25, 'square', 0.07, 0, 60); },
+  stage() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.13, 'square', 0.06, i * 0.09)); },
+  over() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.28, 'triangle', 0.09, i * 0.2)); },
+  win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.14, 'triangle', 0.08, i * 0.1)); },
+  bgm(on) {
+    clearInterval(this.timer); this.timer = null; if (!on) return;
+    const lead = [440,0,523,0,659,0,523,0,587,0,523,0,440,0,392,0], bass = [110,110,87,98];
+    this.timer = setInterval(() => {
+      const s = this.step++ % 16; if (this.muted || !this.ctx) return;
+      if (lead[s]) this.tone(lead[s], 0.18, 'square', 0.014);
+      if (s % 4 === 0) this.tone(bass[(s / 4) | 0], 0.5, 'triangle', 0.05);
+    }, 200);
+  },
+  toggle() { this.muted = !this.muted; store.set(K.mute, this.muted); if (this.muted) this.bgm(false); else if (B && !B.paused && !B.over) this.bgm(true); paintSnd(); }
+};
+
+// ===== 스프라이트 (코드로 정의한 도트) =====
+const SPR = {
+  hero: ['....DDDD....','...DSSSSD...','..DSSSSSSD..','..DYYYYYYD..','..DYDYYDYD..','...YYYYYY...','..BBBBBBBB..','.BBBBWWBBBB.','.YBBBBBBBBY.','..BBBBBBBB..','..PP....PP..','..DD....DD..'],
+  slime: ['............','............','....GGGG....','..GGLLGGGG..','.GGLLGGGGGG.','.GGGGGGGGGG.','.GGDGGGGDGG.','.GGDGGGGDGG.','GGGGGGGGGGGG','GGGGGDDGGGGG','.GGGGGGGGGG.','..TTTTTTTT..'],
+  bat: ['............','R..........R','RR...RR...RR','RRR.RRRR.RRR','RRRRRRRRRRRR','RRRRYRRYRRRR','.RRRRRRRRRR.','..RR.RR.RR..','...R.WW.R...'],
+  skull: ['............','...WWWWWW...','..WWWWWWWW..','.WWWWWWWWWW.','.WWDDWWDDWW.','.WWDDWWDDWW.','.WWWWDDWWWW.','..WWWWWWWW..','...WWWWWW...','...WDWDWDW..','....gggg....']
+};
+const SPR_CV = {};
+function buildSprites() {
+  for (const k in SPR) {
+    const rows = SPR[k], c = document.createElement('canvas'); c.width = 12; c.height = 12; const x = c.getContext('2d');
+    rows.forEach((r, y) => r.padEnd(12, '.').split('').forEach((ch, i) => { if (PAL[ch]) { x.fillStyle = PAL[ch]; x.fillRect(i, y, 1, 1); } }));
+    SPR_CV[k] = c;
+  }
+}
+const MON_TYPES = ['slime', 'bat', 'skull'];
+
+// ===== DOM 참조 / 화면 전환 =====
+const $ = (id) => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+const inp = $('inp'), labels = $('labels'), rInp = $('rInp');
+let screen = 'menu', comp = false, B = null, D = null, R = null, lastResult = null, softShift = false;
+const ICON_ON = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM17 9l5 6M22 9l-5 6"/></svg>';
+
+function show(id) { screen = id; document.querySelectorAll('.screen').forEach(s => { s.hidden = s.id !== 'scr-' + id; }); if (id === 'menu') paintMenu(); window.scrollTo(0, 0); }
+let toastT = 0;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+function paintSnd() { $('btnSnd').innerHTML = Snd.muted ? ICON_OFF : ICON_ON; }
+// 조합(IME) 중에 값을 지우면 글자가 남는 브라우저가 있어, 조합 중에는 blur 후 다시 포커스한다.
+// 조합(IME) 중에는 입력창을 지우거나 포커스를 옮기지 않는다. 조합 중에 지우면 한글 입력기가 들고 있던 마지막 글자가
+// 다음 입력에 다시 섞여 나온다(예: '만세' 다음 줄에서 '무'를 치면 '세'가 같이 나옴). 조합 중이면 끝난 뒤(compositionend)에 지운다.
+function clearInput(el) { if (comp) el._clearOnEnd = true; else { el.value = ''; el._clearOnEnd = false; } }
+// 입력값(NFC). Space로 조합을 확정하면 앞에 공백이 남을 수 있어 앞 공백은 무시한다.
+const typedOf = (el) => el.value.normalize('NFC').replace(/^\s+/, '');
+function bookProgress() { const d = store.get(K.book, {}); let done = 0, all = 0; BOOKS.forEach(b => b.chapters.forEach((c, i) => { all++; if (d[b.id] && d[b.id][i]) done++; })); return [done, all]; }
+function paintMenu() {
+  const hi = store.get(K.hi, 0), dr = store.get(K.drill, []), se = store.get(K.sent, 0), sp = store.get(K.speed, {}), bp = bookProgress();
+  $('recBattle').textContent = hi ? `최고 ${hi.toLocaleString()}점` : '';
+  $('recDrill').textContent = `★ ${dr.reduce((a, b) => a + (b || 0), 0)} / ${DRILL.length * 3}`;
+  $('recBook').textContent = `${bp[0]} / ${bp[1]}장 완독`;
+  $('recSpeed').textContent = `기록 ${Object.keys(sp).length} / ${SPEED.length}`;
+  $('recSent').textContent = se ? `최고 ${se} 타/분` : '';
+}
+function rankOf(cpm, acc) { return cpm >= 350 && acc >= 95 ? 'S' : cpm >= 250 && acc >= 90 ? 'A' : cpm >= 150 ? 'B' : 'C'; }
+
+// ===== 낱말 배틀 =====
+function newBattle() {
+  return { mons: [], parts: [], beams: [], hp: MAX_HP, score: 0, kills: 0, combo: 0, maxCombo: 0, stage: 1, t: 0, spawnT: 0.4,
+    shake: 0, hit: 0, flash: 0, banner: 0, right: 0, wrong: 0, over: false, paused: false };
+}
+function startBattle() {
+  clearBattleDom(); B = newBattle(); show('battle'); $('pause').hidden = true; clearInput(inp);
+  setBanner('준비!', 1.2); Snd.bgm(true); paintHud(); inp.focus();
+}
+function clearBattleDom() { labels.innerHTML = ''; }
+function leaveBattle() { Snd.bgm(false); B = null; clearBattleDom(); show('menu'); }
+function setBanner(txt, sec) { B.banner = sec; $('banner').textContent = txt; }
+function pickWord() {
+  const live = B.mons.map(m => toJamo(m.word));
+  for (let i = 0; i < 30; i++) {
+    const w = pick(wordPool(B.stage)), j = toJamo(w);
+    if (!live.some(o => o.startsWith(j) || j.startsWith(o))) return w;
+  }
+  return pick(wordPool(B.stage));
+}
+function spawn() {
+  const free = [0, 1, 2].filter(l => !B.mons.some(m => m.lane === l && m.x > W - 90));
+  if (!free.length || B.mons.length >= 6) return;
+  const el = document.createElement('div'); el.className = 'lbl'; const word = pickWord(); el.textContent = word; labels.appendChild(el);
+  B.mons.push({ word, el, lane: pick(free), x: W + 14, speed: Math.min(46, 13 + B.stage * 3.2) * (0.85 + Math.random() * 0.3), type: pick(MON_TYPES), ph: Math.random() * 6 });
+}
+function updateBattle(dt) {
+  if (B.hit > 0) { B.hit -= dt; return; }
+  B.t += dt; B.spawnT -= dt;
+  const interval = Math.max(0.95, 3.4 - B.stage * 0.26);
+  if (B.spawnT <= 0 || (B.mons.length === 0 && B.spawnT < interval * 0.5)) { spawn(); B.spawnT = interval * (0.8 + Math.random() * 0.4); }
+  for (const m of B.mons.slice()) {
+    m.x -= m.speed * dt;
+    if (m.x <= HERO_X + 14) { hurtHero(m); if (B.over) break; }
+  }
+  B.parts = B.parts.filter(p => (p.life -= dt) > 0); B.parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt; });
+  B.beams = B.beams.filter(b => (b.t -= dt) > 0);
+  B.shake = Math.max(0, B.shake - dt); B.flash = Math.max(0, B.flash - dt); B.banner = Math.max(0, B.banner - dt);
+}
+function removeMon(m) { m.el.remove(); B.mons.splice(B.mons.indexOf(m), 1); }
+function burst(x, y, colors, n) { for (let i = 0; i < n; i++) B.parts.push({ x, y, vx: (Math.random() - 0.5) * 110, vy: -Math.random() * 70, life: 0.5 + Math.random() * 0.3, c: pick(colors) }); }
+function hurtHero(m) {
+  removeMon(m); B.hp--; B.combo = 0; B.shake = 0.35; B.flash = 0.25; B.hit = 0.08; Snd.hurt(); burst(HERO_X, LANES[1] - 12, [PAL.R, PAL.O], 14); paintHud();
+  if (B.hp <= 0) endBattle();
+}
+function kill(m) {
+  const jl = toJamo(m.word).length; B.right += jl; B.combo++; B.maxCombo = Math.max(B.maxCombo, B.combo); B.kills++;
+  B.score += Math.round(jl * 10 * (1 + Math.min(B.combo, 30) / 10));
+  B.beams.push({ x1: HERO_X + 8, y1: LANES[1] - 12, x2: m.x, y2: LANES[m.lane] - 12, t: 0.12 });
+  burst(m.x, LANES[m.lane] - 12, [PAL.Y, PAL.W, PAL.C, PAL.L], 16); B.shake = 0.12; B.hit = 0.05; Snd.hit(B.combo); removeMon(m);
+  if (B.kills % KILLS_PER_STAGE === 0) { B.stage++; if (B.hp < MAX_HP) B.hp++; setBanner('STAGE ' + B.stage, 1.6); Snd.stage(); }
+  paintHud();
+}
+function paintHud() {
+  const hp = Math.max(0, B.hp);
+  $('hHearts').innerHTML = `<span style="color:#fb7185">${'♥'.repeat(hp)}</span><span style="opacity:.3">${'♥'.repeat(MAX_HP - hp)}</span>`;
+  $('hStage').textContent = B.stage; $('hScore').textContent = B.score.toLocaleString(); $('hCombo').textContent = B.combo;
+}
+function updateLabels(v, ready) {
+  const jv = toJamo(v || '');
+  for (const m of B.mons) {
+    const hot = !!jv && toJamo(m.word).startsWith(jv), rd = !!ready && m.word === v, k = rd ? m.word.length : hot ? Math.max(0, v.length - (comp ? 1 : 0)) : 0;
+    m.el.className = 'lbl' + (hot ? ' hot' : '') + (rd ? ' ready' : ''); m.el.innerHTML = k ? `<b>${m.word.slice(0, k)}</b>${m.word.slice(k)}` : m.word;
+  }
+  $('hintBattle').textContent = ready ? '다 쳤어요! Space 또는 Enter로 공격!' : BATTLE_HINT;
+}
+const BATTLE_HINT = '낱말을 다 치고 Space 또는 Enter로 공격! 틀리면 입력이 지워지고 콤보가 끊겨요.';
+// 낱말을 다 쳐도 마지막 글자는 조합 중이라 아직 확정 전이다. Space/Enter로 확정되어(조합 종료) 입력이 일치할 때 공격한다.
+// 조합 중에 입력창을 지우면 마지막 글자가 다음 낱말에 섞이므로, 틀렸을 때도 조합이 끝난 뒤에 지운다.
+function onBattleInput(force) {
+  if (screen !== 'battle' || !B || B.paused || B.over) return;
+  const v = inp.value.normalize('NFC').replace(/^\s+/, ''), w = v.trimEnd(), submitted = !!force || v.length > w.length;
+  if (!w) { B.missed = false; if (!comp) inp.value = ''; updateLabels(''); return; }
+  if (/[a-zA-Z]/.test(w)) { toast('한/영 키를 눌러 한글로 바꿔 주세요!'); clearInput(inp); updateLabels(''); return; }
+  const hit = B.mons.find(m => m.word === w);
+  if (hit && !comp) { B.missed = false; kill(hit); clearInput(inp); updateLabels(''); return; }
+  if (hit) { updateLabels(w, true); return; } // 다 쳤고 마지막 글자만 조합 중: 확정을 기다린다
+  const jv = toJamo(w), onTrack = B.mons.some(m => toJamo(m.word).startsWith(jv));
+  if (!onTrack || submitted) {
+    if (!B.missed) { B.missed = true; B.wrong++; B.combo = 0; Snd.miss(); paintHud(); inp.classList.add('bad'); setTimeout(() => inp.classList.remove('bad'), 200); }
+    clearInput(inp); if (!comp) B.missed = false; updateLabels(''); return;
+  }
+  B.missed = false; Snd.type(); updateLabels(w);
+}
+function pauseBattle(on) {
+  if (!B || B.over) return; B.paused = on; $('pause').hidden = !on;
+  if (on) { Snd.bgm(false); inp.blur(); } else { if (!Snd.muted) Snd.bgm(true); inp.focus(); }
+}
+function endBattle() {
+  B.over = true; Snd.bgm(false); Snd.over(); setBanner('GAME OVER', 5); const b = B;
+  setTimeout(() => {
+    if (B !== b) return;
+    const hi = store.get(K.hi, 0), isNew = b.score > hi; if (isNew) store.set(K.hi, b.score);
+    const cpm = b.t >= 1 ? Math.round(b.right / (b.t / 60)) : 0, tot = b.right + b.wrong, acc = tot ? Math.round(b.right / tot * 100) : 100;
+    const rank = b.stage >= 8 ? 'S' : b.stage >= 6 ? 'A' : b.stage >= 4 ? 'B' : 'C';
+    showResult({ title: '낱말 배틀', rank, rows: [['점수', b.score.toLocaleString()], ['도달 스테이지', b.stage], ['처치한 몬스터', b.kills], ['최대 콤보', b.maxCombo], ['타자 속도', cpm + ' 타/분'], ['정확도', acc + '%']],
+      note: isNew && b.score > 0 ? '신기록!' : `최고 기록 ${Math.max(hi, b.score).toLocaleString()}점`, retry: startBattle,
+      share: `[타닥타닥 던전] 낱말 배틀 ${b.score.toLocaleString()}점 (스테이지 ${b.stage}, ${cpm}타/분, 정확도 ${acc}%) ${rank}등급!` });
+    clearBattleDom(); B = null;
+  }, 1600);
+}
+function renderBattle() {
+  ctx.save();
+  if (B.shake > 0) ctx.translate(Math.round((Math.random() - 0.5) * 6 * (B.shake / 0.3 + 0.3)), Math.round((Math.random() - 0.5) * 4));
+  ctx.fillStyle = PAL.D; ctx.fillRect(-10, -10, W + 20, H + 20);
+  for (let i = 0; i < 26; i++) { const x = (i * 97) % W, y = (i * 53) % 52; ctx.fillStyle = (i + Math.floor(B.t * 2)) % 5 ? PAL.d : PAL.W; ctx.fillRect(x, y, 1, 1); }
+  ctx.fillStyle = PAL.W; ctx.beginPath(); ctx.arc(268, 30, 13, 0, 7); ctx.fill(); ctx.fillStyle = PAL.g; ctx.beginPath(); ctx.arc(263, 27, 4, 0, 7); ctx.fill();
+  ctx.fillStyle = PAL.P; ctx.beginPath(); ctx.moveTo(0, 62); [[40, 36],[80, 56],[130, 30],[190, 58],[240, 40],[290, 56],[320, 44],[320, 62]].forEach(p => ctx.lineTo(p[0], p[1])); ctx.fill();
+  ctx.fillStyle = PAL.e; ctx.fillRect(0, 62, W, H - 62);
+  LANES.forEach((y, i) => { ctx.fillStyle = i % 2 ? PAL.e : PAL.N; ctx.fillRect(0, y - 30, W, 36); ctx.fillStyle = PAL.d; ctx.fillRect(0, y + 6, W, 1); });
+  ctx.fillStyle = PAL.D; ctx.fillRect(0, 171, W, 9);
+  const fl = Math.floor(B.t * 6) % 2; [8, 306].forEach(x => { ctx.fillStyle = PAL.d; ctx.fillRect(x, 70, 4, 14); ctx.fillStyle = fl ? PAL.O : PAL.Y; ctx.fillRect(x - 1, 62 + fl, 6, 8); });
+  const bob = Math.round(Math.sin(B.t * 5)), draw = (n, x, y) => ctx.drawImage(SPR_CV[n], Math.round(x), Math.round(y), 24, 24);
+  draw('hero', HERO_X - 12, LANES[1] - 24 + bob);
+  ctx.fillStyle = PAL.W; ctx.fillRect(HERO_X + 12, LANES[1] - 20 + bob, 2, 10); ctx.fillStyle = PAL.Y; ctx.fillRect(HERO_X + 11, LANES[1] - 11 + bob, 4, 2);
+  for (const m of B.mons) {
+    const yy = LANES[m.lane] - 24 + Math.round(Math.sin(B.t * 6 + m.ph) * 2); draw(m.type, m.x - 12, yy);
+    m.el.style.left = (m.x / W * 100) + '%'; m.el.style.top = ((yy - 2) / H * 100) + '%';
+  }
+  for (const b of B.beams) { ctx.strokeStyle = PAL.C; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke(); ctx.strokeStyle = PAL.W; ctx.lineWidth = 1; ctx.stroke(); }
+  for (const p of B.parts) { ctx.fillStyle = p.c; ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); }
+  if (B.flash > 0) { ctx.fillStyle = PAL.R; ctx.globalAlpha = B.flash * 1.6; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+  ctx.restore();
+  $('banner').classList.toggle('on', B.banner > 0);
+}
+
+// ===== 자리 연습 =====
+function drillStars() { return store.get(K.drill, []); }
+function openDrillSel() {
+  const stars = drillStars(), list = $('drillList'); list.innerHTML = '';
+  DRILL.forEach((d, i) => {
+    const open = i === 0 || (stars[i - 1] || 0) >= 1, b = document.createElement('button'); b.className = 'sc'; b.disabled = !open;
+    b.innerHTML = `<h3>${i + 1}단계 ${d.name}</h3><p>${open ? d.desc : '앞 단계를 먼저 클리어하세요'}</p><div class="st">${'★'.repeat(stars[i] || 0)}${'☆'.repeat(3 - (stars[i] || 0))}</div>`;
+    b.onclick = () => startDrill(i); list.appendChild(b);
+  });
+  show('drillSel');
+}
+function buildKb() {
+  const kb = $('kb'); kb.innerHTML = '';
+  KB_ROWS.forEach((r, ri) => {
+    const rowEl = document.createElement('div'); rowEl.className = 'krow'; rowEl.style.paddingLeft = ri * 3 + '%';
+    r.forEach(code => {
+      const b = document.createElement('button'); b.className = 'key'; b.dataset.code = code;
+      if (code === 'Shift') { b.classList.add('wide'); b.textContent = 'Shift'; }
+      else { const [n, s] = KEYMAP[code]; b.classList.add('f' + FINGER[code]); b.innerHTML = (s !== n ? `<small>${s}</small>` : '') + n; }
+      rowEl.appendChild(b);
+    });
+    kb.appendChild(rowEl);
+  });
+  kb.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('.key'); if (!b) return; e.preventDefault(); Snd.init();
+    if (b.dataset.code === 'Shift') { softShift = !softShift; b.classList.toggle('on', softShift); return; }
+    drillPress(b.dataset.code, softShift); softShift = false; kb.querySelectorAll('.on').forEach(x => x.classList.remove('on'));
+  });
+}
+function startDrill(i) {
+  const d = DRILL[i], keys = []; let prev = '';
+  while (keys.length < DRILL_LEN) {
+    const code = pick(d.codes); if (code === prev && d.codes.length > 1) continue; prev = code;
+    keys.push({ code, shift: !!d.shift && Math.random() < 0.75 && KEYMAP[code][0] !== KEYMAP[code][1] });
+  }
+  D = { i, keys, n: 0, right: 0, wrong: 0, combo: 0, start: 0, done: false }; softShift = false;
+  $('dName').textContent = `${i + 1}단계 ${d.name}`; show('drill'); paintDrill();
+}
+function paintDrill() {
+  const t = D.keys[D.n], tot = D.right + D.wrong;
+  $('dTarget').textContent = (t.shift ? '⇧ ' : '') + KEYMAP[t.code][t.shift ? 1 : 0];
+  $('dFinger').textContent = FINGER_NAME[FINGER[t.code]] + (t.shift ? ' + 반대쪽 새끼로 Shift' : '');
+  $('dBar').style.width = (D.n / DRILL_LEN * 100) + '%'; $('dAcc').textContent = (tot ? Math.round(D.right / tot * 100) : 100) + '%'; $('dCombo').textContent = D.combo;
+  document.querySelectorAll('#kb .key').forEach(k => k.classList.toggle('target', k.dataset.code === t.code || (t.shift && k.dataset.code === 'Shift')));
+}
+function drillPress(code, shift) {
+  if (screen !== 'drill' || !D || D.done) return;
+  if (!D.start) D.start = performance.now();
+  const t = D.keys[D.n];
+  if (code === t.code && !!shift === t.shift) { D.right++; D.combo++; D.n++; Snd.hit(D.combo); if (D.n >= DRILL_LEN) { finishDrill(); return; } }
+  else { D.wrong++; D.combo = 0; Snd.miss(); const el = $('dTarget'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+  paintDrill();
+}
+function finishDrill() {
+  D.done = true; const sec = (performance.now() - D.start) / 1000, acc = D.right / (D.right + D.wrong), kpm = Math.round(DRILL_LEN / (sec / 60));
+  const stars = acc >= 0.97 ? 3 : acc >= 0.9 ? 2 : 1, arr = drillStars(), d = D; arr[d.i] = Math.max(arr[d.i] || 0, stars); store.set(K.drill, arr);
+  showResult({ title: `${d.i + 1}단계 ${DRILL[d.i].name}`, rank: '★'.repeat(stars) + '☆'.repeat(3 - stars), cls: ['C', 'B', 'A', 'S'][stars], small: true,
+    rows: [['정확도', Math.round(acc * 100) + '%'], ['속도', kpm + ' 타/분'], ['걸린 시간', sec.toFixed(1) + '초'], ['틀린 횟수', d.wrong]],
+    note: stars < 3 ? '정확도 97% 이상이면 별 3개!' : '완벽해요!', retry: () => startDrill(d.i),
+    share: `[타닥타닥 던전] 자리 연습 ${d.i + 1}단계 ${'★'.repeat(stars)} (정확도 ${Math.round(acc * 100)}%, ${kpm}타/분)` });
+}
+
+// ===== 글 연습 엔진 (문장 도전 · 책 읽기 · 스피드런 공용) =====
+// o: { kind, title, lines, ghost(초, 선택), back(나가기 동작), onFinish({sec,cpm,acc}) }
+function startRun(o) {
+  const cum = []; let n = 0; o.lines.forEach(l => { cum.push(n); n += l.length; });
+  R = Object.assign({ idx: 0, start: 0, jamo: 0, right: 0, wrong: 0, cum, total: n, ghost: 0 }, o);
+  $('rTitle').textContent = o.title; $('rGhost').style.display = o.ghost ? '' : 'none'; $('rGhost').style.width = '0';
+  show('run'); loadLine();
+}
+function loadLine() { clearInput(rInp); $('rNum').textContent = `${R.idx + 1} / ${R.lines.length}`; renderRun(); rInp.focus(); }
+function renderRun() {
+  const L = R.lines, t = L[R.idx], v = typedOf(rInp), ready = comp && v.trimEnd() === t, done = ready ? v.length : v.length - (comp ? 1 : 0); let cur = '';
+  for (let i = 0; i < t.length; i++) {
+    const ch = esc(t[i]); // 공백은 일반 공백으로 두어야 긴 줄이 줄바꿈된다 (pre-wrap)
+    if (i < done) cur += `<span class="${v[i] === t[i] ? 'ok' : 'bad'}">${ch}</span>`;
+    else cur += i === Math.max(0, done) ? `<span class="cur">${ch}</span>` : `<span>${ch}</span>`;
+  }
+  const dim = (i, c) => L[i] !== undefined ? `<div class="rl ${c}">${esc(L[i])}</div>` : '';
+  $('runView').innerHTML = dim(R.idx - 1, 'prev') + `<div class="rl cur${ready ? ' ready' : ''}">${cur}</div>` + dim(R.idx + 1, 'nx') + dim(R.idx + 2, 'nx nx2');
+  $('rHint').textContent = ready ? '다 쳤어요! Space 또는 Enter로 다음 줄로 넘어가요.' : RUN_HINT;
+  fitCurrentLine();
+}
+// 현재 줄이 한 줄에 들어가도록 글자 크기를 줄인다. 최소 크기보다 작아져야 하면 그때만 줄바꿈을 허용한다.
+const MIN_RUN_FONT = 15;
+function fitCurrentLine() {
+  const el = document.querySelector('#runView .rl.cur'); if (!el) return;
+  const base = parseFloat(getComputedStyle(el).fontSize), over = el.scrollWidth, room = el.clientWidth;
+  if (over <= room + 1) return;
+  const size = base * room / over * 0.97;
+  if (size >= MIN_RUN_FONT) el.style.fontSize = size + 'px';
+  else { el.style.fontSize = MIN_RUN_FONT + 'px'; el.classList.add('wrap'); }
+}
+window.addEventListener('resize', () => { if (screen === 'run' && R) renderRun(); });
+const RUN_HINT = '줄을 다 치고 Space 또는 Enter로 넘어가요. (마침표로 끝나는 줄은 자동으로 넘어가요)';
+function onRunInput() {
+  if (screen !== 'run' || !R) return;
+  if (!R.start && typedOf(rInp)) R.start = performance.now();
+  Snd.type(); renderRun();
+  // 마지막 글자가 조합 중이면 아직 확정 전이라 기다린다. Space/Enter로 확정되면 compositionend에서 다시 여기로 온다.
+  if (!comp && typedOf(rInp).trimEnd() === R.lines[R.idx]) submitLine();
+}
+function submitLine() {
+  const t = R.lines[R.idx], v = typedOf(rInp).trimEnd(); if (!v) return;
+  let ok = 0; for (let i = 0; i < t.length; i++) { if (v[i] === t[i]) { ok++; R.jamo += toJamo(t[i]).length; } }
+  R.right += ok; R.wrong += Math.max(v.length, t.length) - ok; ok === t.length ? Snd.hit(5) : Snd.miss(); R.idx++;
+  if (R.idx >= R.lines.length) finishRun(); else loadLine();
+}
+function finishRun() {
+  const r = R, sec = (performance.now() - r.start) / 1000, cpm = Math.round(r.jamo / (sec / 60)), acc = Math.round(r.right / (r.right + r.wrong) * 100);
+  r.finished = true; r.onFinish({ sec, cpm, acc });
+}
+function leaveRun() { if (!R) return; const back = R.back; R = null; back(); }
+
+function startSent() {
+  startRun({ kind: 'sent', title: '문장 도전', lines: shuffle(SENTENCES).slice(0, 5), back: () => show('menu'), onFinish: ({ sec, cpm, acc }) => {
+    const rank = rankOf(cpm, acc), best = store.get(K.sent, 0), isNew = cpm > best && acc >= 80; if (isNew) store.set(K.sent, cpm);
+    showResult({ title: '문장 도전', rank, rows: [['타자 속도', cpm + ' 타/분'], ['정확도', acc + '%'], ['걸린 시간', fmt(sec)]],
+      note: isNew ? '신기록!' : (best ? `최고 기록 ${best} 타/분` : ''), retry: startSent, share: `[타닥타닥 던전] 문장 도전 ${cpm}타/분, 정확도 ${acc}% (${rank}등급)` });
+  } });
+}
+
+// ===== 책 읽기 =====
+function openBookSel() {
+  const d = store.get(K.book, {}), root = $('bookList'); root.innerHTML = '';
+  BOOKS.forEach(b => {
+    const done = b.chapters.filter((c, i) => d[b.id] && d[b.id][i]).length, head = document.createElement('div'); head.className = 'bookHead';
+    head.innerHTML = `<h3>${b.title}</h3><span>${b.author} · ${done}/${b.chapters.length}장${done === b.chapters.length ? ' · 완독' : ''}</span>`; root.appendChild(head);
+    const list = document.createElement('div'); list.className = 'list';
+    b.chapters.forEach((c, i) => {
+      const rec = d[b.id] && d[b.id][i], el = document.createElement('button'); el.className = 'sc';
+      el.innerHTML = `<h3>${c.title}</h3><p>${c.lines.length}줄</p><div class="st">${rec ? '완료 · ' + rec + ' 타/분' : '아직 읽지 않았어요'}</div>`;
+      el.onclick = () => startChapter(b, i); list.appendChild(el);
+    });
+    root.appendChild(list);
+  });
+  show('bookSel');
+}
+function startChapter(b, i) {
+  const c = b.chapters[i];
+  startRun({ kind: 'book', title: `${b.title} · ${c.title}`, lines: c.lines, back: openBookSel, onFinish: ({ sec, cpm, acc }) => {
+    const d = store.get(K.book, {}); d[b.id] = d[b.id] || {}; d[b.id][i] = Math.max(d[b.id][i] || 0, cpm); store.set(K.book, d);
+    const all = b.chapters.every((x, j) => d[b.id][j]), rank = rankOf(cpm, acc);
+    showResult({ title: all ? `「${b.title}」 완독!` : `${b.title} · ${c.title}`, rank: all ? '완독' : rank, cls: all ? 'S' : rank, small: all,
+      rows: [['타자 속도', cpm + ' 타/분'], ['정확도', acc + '%'], ['걸린 시간', fmt(sec)], ['읽은 장', `${b.chapters.filter((x, j) => d[b.id][j]).length} / ${b.chapters.length}`]],
+      note: all ? '모든 장을 마쳤어요. 완독 카드를 저장해 보세요!' : (i + 1 < b.chapters.length ? '다음 장도 도전해 보세요.' : ''),
+      retry: () => startChapter(b, i), card: all ? `「${b.title}」 완독` : null,
+      share: all ? `[타닥타닥 던전] 「${b.title}」 완독! 평균 ${cpm}타/분` : `[타닥타닥 던전] ${b.title} ${c.title} ${cpm}타/분 (정확도 ${acc}%)` });
+  } });
+}
+
+// ===== 스피드런 =====
+function openSpeedSel() {
+  const sp = store.get(K.speed, {}), list = $('speedList'); list.innerHTML = '';
+  SPEED.forEach(p => {
+    const el = document.createElement('button'); el.className = 'sc';
+    el.innerHTML = `<h3>${p.title}</h3><p>${p.lines.length}줄 · ${p.lines.join('').length}글자</p><div class="st">${sp[p.id] ? '최고 ' + fmt(sp[p.id]) : '기록 없음'}</div>`;
+    el.onclick = () => startSpeed(p); list.appendChild(el);
+  });
+  show('speedSel');
+}
+function startSpeed(p) {
+  const best = store.get(K.speed, {})[p.id] || 0;
+  startRun({ kind: 'speed', title: p.title, lines: p.lines, ghost: best, back: openSpeedSel, onFinish: ({ sec, cpm, acc }) => {
+    const sp = store.get(K.speed, {}), old = sp[p.id], valid = acc >= 90, isNew = valid && (!old || sec < old);
+    if (isNew) { sp[p.id] = Math.max(0.1, +sec.toFixed(1)); store.set(K.speed, sp); }
+    showResult({ title: `스피드런 · ${p.title}`, rank: fmt(sec), cls: valid ? 'S' : 'C', small: true,
+      rows: [['타자 속도', cpm + ' 타/분'], ['정확도', acc + '%'], ['내 최고 기록', fmt(isNew ? sec : (old || sec))]],
+      note: !valid ? '정확도 90% 이상이어야 기록돼요' : isNew ? (old ? `신기록! ${fmt(old - sec)} 단축` : '첫 기록 등록!') : `최고 기록까지 ${fmt(sec - old)} 남았어요`,
+      retry: () => startSpeed(p), share: `[타닥타닥 던전] ${p.title} 스피드런 ${fmt(sec)} (정확도 ${acc}%)` });
+  } });
+}
+
+// ===== 결과 / 공유 =====
+function showResult(o) {
+  lastResult = o; $('rsTitle').textContent = o.title; const r = $('rsRank'); r.textContent = o.rank; r.className = 'rank ' + (o.cls || o.rank) + (o.small ? ' small' : '');
+  $('rsRows').innerHTML = o.rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join(''); $('rsNote').textContent = o.note || '';
+  show('result'); if (o.rank !== 'C' && o.cls !== 'C') Snd.win();
+}
+function copyText(txt) {
+  const full = txt + ' ' + location.href;
+  const fallback = () => { const a = document.createElement('textarea'); a.value = full; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); toast('복사했어요!'); } catch (e) { toast('복사하지 못했어요'); } a.remove(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(() => toast('복사했어요!'), fallback); else fallback();
+}
+function saveImage(o) {
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 630; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 1200, 630); g.addColorStop(0, '#1b1450'); g.addColorStop(1, '#0b1020'); x.fillStyle = g; x.fillRect(0, 0, 1200, 630);
+  const glow = x.createRadialGradient(950, 80, 10, 950, 80, 420); glow.addColorStop(0, 'rgba(34,211,238,.35)'); glow.addColorStop(1, 'rgba(34,211,238,0)'); x.fillStyle = glow; x.fillRect(0, 0, 1200, 630);
+  x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 3; x.strokeRect(36, 36, 1128, 558);
+  x.textAlign = 'center'; x.fillStyle = '#9aa4c7'; x.font = '700 34px sans-serif'; x.fillText('타닥타닥 던전', 600, 100);
+  x.fillStyle = '#fff'; x.font = '800 46px sans-serif'; x.fillText(o.card || o.title, 600, 170);
+  x.fillStyle = '#fbbf24'; x.font = '900 ' + (o.rank.length > 3 ? 110 : 170) + 'px sans-serif'; x.fillText(o.rank, 600, 340);
+  x.fillStyle = '#eef1ff'; x.font = '700 38px sans-serif'; o.rows.slice(0, 3).forEach(([k, v], i) => x.fillText(`${k}   ${v}`, 600, 420 + i * 56));
+  x.fillStyle = '#9aa4c7'; x.font = '600 26px sans-serif'; x.fillText(location.host || 'tadak-dungeon', 600, 580);
+  c.toBlob((b) => { if (!b) { toast('이미지를 만들지 못했어요'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'tadak-dungeon-card.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); });
+}
+
+// ===== 입력 연결 =====
+function wireInput(el, fn) {
+  el.addEventListener('compositionstart', () => { comp = true; });
+  el.addEventListener('compositionend', () => { comp = false; if (el._clearOnEnd) { el.value = ''; el._clearOnEnd = false; } fn(); });
+  el.addEventListener('input', fn);
+}
+wireInput(inp, () => onBattleInput()); wireInput(rInp, onRunInput);
+inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); onBattleInput(true); } });
+rInp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submitLine(); } });
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape') {
+    if (screen === 'battle' && B && !B.over) pauseBattle(!B.paused); else if (screen === 'drill') openDrillSel(); else if (screen === 'run') leaveRun(); return;
+  }
+  if (screen === 'drill' && D && !D.done) {
+    if (KEYMAP[e.code]) { e.preventDefault(); if (!e.repeat) { Snd.init(); drillPress(e.code, e.shiftKey); } } else if (e.key === ' ' || e.key === 'Process') e.preventDefault();
+  }
+});
+document.addEventListener('pointerdown', () => Snd.init(), { passive: true });
+document.addEventListener('keydown', () => Snd.init(), { once: true });
+document.addEventListener('visibilitychange', () => { if (document.hidden && screen === 'battle' && B && !B.over && !B.paused) pauseBattle(true); });
+$('stage').addEventListener('pointerdown', (e) => { if (!B || B.paused || B.over || e.target.closest('button')) return; inp.focus(); });
+
+$('goBattle').onclick = () => { Snd.init(); startBattle(); };
+$('goDrill').onclick = () => { Snd.init(); openDrillSel(); };
+$('goBook').onclick = () => { Snd.init(); openBookSel(); };
+$('goSpeed').onclick = () => { Snd.init(); openSpeedSel(); };
+$('goSent').onclick = () => { Snd.init(); startSent(); };
+document.querySelectorAll('[data-go]').forEach(b => { b.onclick = () => show(b.dataset.go); });
+$('bMenu').onclick = leaveBattle; $('pQuit').onclick = leaveBattle; $('pResume').onclick = () => pauseBattle(false); $('btnPause').onclick = () => pauseBattle(!(B && B.paused));
+$('dBack').onclick = openDrillSel; $('rBack').onclick = leaveRun;
+$('rsRetry').onclick = () => lastResult && lastResult.retry(); $('rsMenu').onclick = () => show('menu');
+$('rsCopy').onclick = () => lastResult && copyText(lastResult.share); $('rsImg').onclick = () => lastResult && saveImage(lastResult);
+$('btnSnd').onclick = () => { Snd.init(); Snd.toggle(); };
+// 홈: 어느 화면에서든 진행 중인 판을 정리하고 이 게임의 시작 화면으로 돌아간다 (파일 하나만 옮겨도 동작)
+$('btnHome').onclick = () => { Snd.bgm(false); B = null; clearBattleDom(); R = null; D = null; $('pause').hidden = true; show('menu'); };
+
+// ===== 메인 루프 (고정 타임스텝) =====
+let last = performance.now(), acc = 0;
+function frame(now) {
+  acc += Math.min(0.1, (now - last) / 1000); last = now;
+  while (acc >= STEP) { if (screen === 'battle' && B && !B.paused && !B.over) updateBattle(STEP); acc -= STEP; }
+  if (screen === 'battle' && B) renderBattle();
+  if (screen === 'run' && R && !R.finished) {
+    const sec = R.start ? (performance.now() - R.start) / 1000 : 0, typed = Math.min(rInp.value.length, R.lines[R.idx].length);
+    $('rTime').textContent = fmt(sec); $('rCpm').textContent = sec > 2 ? Math.round(R.jamo / (sec / 60)) : 0;
+    $('rBar').style.width = ((R.cum[R.idx] + typed) / R.total * 100) + '%';
+    if (R.ghost) $('rGhost').style.width = Math.min(1, sec / R.ghost) * 100 + '%';
+  }
+  requestAnimationFrame(frame);
+}
+
+// ===== 시작 =====
+buildSprites(); buildKb(); paintSnd(); paintMenu(); show('menu'); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
