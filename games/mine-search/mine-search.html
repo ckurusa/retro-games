@@ -26,7 +26,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
 .topbtns{position:absolute;top:6px;left:6px;right:6px;display:flex;gap:8px;z-index:5;pointer-events:none}
 .sp{flex:1}
-.ib{pointer-events:auto;width:56px;height:56px;border-radius:16px;border:1px solid rgba(34,230,255,.55);background:rgba(5,6,26,.65);color:var(--cyan);display:grid;place-items:center;cursor:pointer;padding:0}
+.ib{position:relative;pointer-events:auto;width:56px;height:56px;border-radius:16px;border:1px solid rgba(34,230,255,.55);background:rgba(5,6,26,.65);color:var(--cyan);display:grid;place-items:center;cursor:pointer;padding:0}
 .ib:active{transform:scale(.94)} .ib[hidden]{display:none}
 .ib svg,.tg svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .toggle{position:absolute;left:12px;right:12px;bottom:8px;height:64px;display:flex;gap:10px;z-index:4}
@@ -56,6 +56,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;
 .note{margin:0;min-height:1.4em;color:var(--yel);font-weight:800;font-size:4.2cqw}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#be123c;color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
+.badge{position:absolute;right:-5px;top:-5px;min-width:22px;height:22px;border-radius:11px;background:#ffe14d;color:#07102a;font-size:13px;font-weight:900;display:grid;place-items:center;padding:0 5px;pointer-events:none}
+.ib.empty{opacity:.45}
 @media (hover:hover) and (pointer:fine){.toggle{display:none!important}} /* 마우스가 있는 기기: 우클릭·F 키로 깃발 */
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -67,11 +69,21 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;
   <div class="overlay" id="ovTitle">
     <h1 class="logo">MINE SEARCH<small>마인서치</small></h1>
     <div class="modes">
-      <button class="mode" id="mClassic" style="--c:#22e6ff"><b>클래식</b><span>초급 9×9 · 지뢰 10 · 최단 기록</span><i id="rClassic"></i></button>
+      <button class="mode" id="mClassic" style="--c:#22e6ff"><b>클래식</b><span>초급·중급·고급 · 최단 기록</span><i id="rClassic"></i></button>
       <button class="mode" id="mRush" style="--c:#ffe14d"><b>러시</b><span>점점 커지는 판을 시간 안에 연속으로!</span><i id="rRush"></i></button>
       <button class="mode" id="mCombo" style="--c:#ff3df2"><b>콤보</b><span>연속 판 · 열수록 ×8 · 클리어 시 목숨 +1</span><i id="rCombo"></i></button>
     </div>
-    <p class="how"><b>PC</b> 좌클릭 열기 · <b>우클릭</b> 깃발 · <b>모바일</b> 탭 열기 · <b>길게 누르기</b> 깃발<br>숫자는 주변 8칸의 지뢰 수 · 첫 칸은 항상 안전해요</p>
+    <p class="how"><b>PC</b> 좌클릭 열기 · <b>우클릭</b> 깃발 · <b>모바일</b> 탭 열기 · <b>길게 누르기</b> 깃발<br>숫자는 주변 8칸의 지뢰 수 · 첫 칸은 항상 안전<br>전구 버튼(H)은 <b>힌트</b>: 안전한 칸을 알려 줘요 (대가가 있어요)</p>
+  </div>
+
+  <div class="overlay" id="ovLevel" hidden>
+    <h2 class="ttl">클래식 난이도</h2>
+    <div class="modes">
+      <button class="mode" id="lvEasy" style="--c:#4dff88"><b>초급</b><span>9×9 · 지뢰 10</span><i id="rEasy"></i></button>
+      <button class="mode" id="lvMid" style="--c:#ffe14d"><b>중급</b><span>12×12 · 지뢰 26</span><i id="rMid"></i></button>
+      <button class="mode" id="lvHard" style="--c:#ff3d71"><b>고급</b><span>15×13 · 지뢰 42</span><i id="rHard"></i></button>
+    </div>
+    <button class="nb" id="btnLvBack">← 모드 선택</button>
   </div>
 
   <div class="overlay" id="ovPause" hidden>
@@ -101,6 +113,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;
   <div class="topbtns">
     <button class="ib" id="btnHome" aria-label="모드 선택으로" hidden><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg></button>
     <span class="sp"></span>
+    <button class="ib" id="btnHint" aria-label="힌트" hidden><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span class="badge" id="hintN">3</span></button>
     <button class="ib" id="btnPause" aria-label="일시정지" hidden><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
     <button class="ib" id="btnSnd" aria-label="소리 켜기/끄기"></button>
   </div>
@@ -117,7 +130,10 @@ const LOGO = 'MINE SEARCH', SHARE_NAME = '마인서치'; // 이름을 바꿀 때
 const K = { hi: `retro_${GAME_ID}_hi`, mute: `retro_${GAME_ID}_mute` };
 const W = 360, H = 480, STEP = 1 / 60;
 const BOARD_TOP = 104, BOARD_H = 296, BOARD_W = 336, CELL_MAX = 60;
-const CLASSIC = { rows: 9, cols: 9, mines: 10 };
+// 클래식 난이도: 폰 화면(가로 360 기준)에서도 칸이 22px 이상 되도록 판 크기를 정했다. 지뢰 밀도는 표준(약 12%·18%·21%)에 맞춘다.
+const LEVELS = { easy: { name: '초급', rows: 9, cols: 9, mines: 10, key: 'classic' }, mid: { name: '중급', rows: 12, cols: 12, mines: 26, key: 'classicMid' }, hard: { name: '고급', rows: 13, cols: 15, mines: 42, key: 'classicHard' } };
+// 힌트: 시작 개수, 사용 비용(클래식 +초, 러시 -초, 콤보 -콤보), 표시 시간
+const HINT_START = { classic: 3, rush: 1, combo: 3 }, HINT_COMBO_MAX = 3, HINT_COST = { classic: 10, rush: 3, combo: 3 }, HINT_SHOW = 8;
 const COMBO_BOARD = { rows: 9, cols: 9, mines: 10 }, COMBO_MINES_STEP = 2, COMBO_MINES_MAX = 18, LIVES = 3, MAX_MULT = 8;
 const RUSH_START = 60, RUSH_PENALTY = 8, RUSH_RESET = 0.9, MIN_BONUS = 4;
 const COMBO_CLEAR_HOLD = 2.4, CALLOUT_RUSH = 1.6; // 판 클리어 안내 유지 시간 / 러시 안내 유지 시간(초)
@@ -161,6 +177,7 @@ const Snd = {
   cascade(n) { for (let i = 0; i < Math.min(n, 6); i++) this.tone(SCALE[clamp(2 + i, 0, SCALE.length - 1)], 0.07, 'square', 0.035, i * 0.045); },
   flag() { this.tone(660, 0.05, 'square', 0.05); this.tone(880, 0.06, 'square', 0.04, 0.045); },
   unflag() { this.tone(520, 0.06, 'square', 0.04); },
+  hint() { this.tone(880, 0.08, 'triangle', 0.06); this.tone(1319, 0.16, 'triangle', 0.05, 0.07); },
   boom() { this.noise(0.4, 0.12); this.tone(110, 0.4, 'sawtooth', 0.08, 0, 40); },
   win() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.16, 'square', 0.06, i * 0.09)); },
   lose() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.28, 'triangle', 0.09, i * 0.18)); },
@@ -181,7 +198,7 @@ const Snd = {
 // ===== 지뢰판 (규칙) =====
 function newBoard(rows, cols, mines) {
   const cells = []; for (let i = 0; i < rows * cols; i++) cells.push({ mine: false, n: 0, open: false, flag: false, boom: false, delay: 0, at: 0 });
-  return { rows, cols, mines, cells, placed: false, opened: 0, flags: 0, safeTotal: rows * cols - mines, wrong: new Set() };
+  return { rows, cols, mines, cells, placed: false, opened: 0, flags: 0, safeTotal: rows * cols - mines, wrong: new Set(), hint: -1 };
 }
 function neighbors(b, i) {
   const r = Math.floor(i / b.cols), c = i % b.cols, out = [];
@@ -229,7 +246,8 @@ const boardCleared = (b) => b.opened >= b.safeTotal;
 
 // ===== 상태 =====
 const cv = $('cv'), ctx = cv.getContext('2d'), frameEl = $('frame');
-let state = 'title'; // title | playing | paused | over
+let state = 'title'; // title | level | playing | paused | over
+let curLevel = 'easy';
 let mode = 'classic', flagMode = false, board = null, geo = null, hover = -1, bgCanvas = null, scaleXY = 1, dpr = 1, errors = 0;
 let G = null, hi = {}, parts = [], pops = [], shake = 0, flash = 0, callout = null, lastResult = null, nowSec = 0;
 
@@ -260,13 +278,13 @@ const cellAt = (lx, ly) => {
 
 // ===== 모드별 게임 진행 =====
 function rushSize(level) { const n = Math.min(9, 4 + level), mines = [0, 3, 5, 7, 10, 12][Math.min(level, 5)] + Math.max(0, level - 5); return { rows: n, cols: n, mines: Math.min(mines, 18) }; }
-function startMode(m) {
-  mode = m; Snd.init(); parts = []; pops = []; callout = null; shake = 0; flash = 0;
-  G = { score: 0, t: 0, started: false, combo: 0, maxMult: 1, lives: LIVES, level: 1, boards: 0, streak: 0, bestStreak: 0, timeLeft: RUSH_START, resetT: 0, hurt: 0, opened: 0, flagsUsed: 0, lastTick: 99, over: false };
-  if (m === 'classic') board = newBoard(CLASSIC.rows, CLASSIC.cols, CLASSIC.mines);
+function startMode(m, lvl) {
+  mode = m; if (lvl) curLevel = lvl; Snd.init(); parts = []; pops = []; callout = null; shake = 0; flash = 0;
+  G = { score: 0, t: 0, started: false, combo: 0, maxMult: 1, lives: LIVES, level: 1, boards: 0, streak: 0, bestStreak: 0, timeLeft: RUSH_START, resetT: 0, hurt: 0, hints: HINT_START[m], hintCount: 0, hintPenalty: 0, hintT: 0, opened: 0, flagsUsed: 0, lastTick: 99, over: false };
+  if (m === 'classic') { const L = LEVELS[curLevel]; board = newBoard(L.rows, L.cols, L.mines); }
   else if (m === 'combo') board = newBoard(COMBO_BOARD.rows, COMBO_BOARD.cols, COMBO_BOARD.mines);
   else { const s = rushSize(1); board = newBoard(s.rows, s.cols, s.mines); }
-  geo = layout(board); flagMode = false; paintToggle(); setState('playing'); Snd.bgm(true);
+  geo = layout(board); flagMode = false; paintToggle(); setState('playing'); paintHints(); Snd.bgm(true);
 }
 const multOf = () => Math.min(MAX_MULT, 1 + Math.floor(G.combo / 3));
 // 안내 문구: 제목 + 여러 줄. 줄마다 프레임 폭에 맞게 글자 크기를 줄이고 어두운 판 위에 그려서 항상 읽히게 한다.
@@ -329,9 +347,9 @@ function onCleared() {
   if (mode === 'classic') { Snd.win(); endGame(true); return; }
   if (mode === 'combo') {
     // 연속 판: 점수와 콤보는 이어가고, 목숨 +1(최대 LIVES), 다음 판은 지뢰가 늘어난다
-    G.boards++; const bonus = 300 + 100 * G.level + 100 * G.lives; G.score += bonus; const gain = G.lives < LIVES ? 1 : 0; G.lives = Math.min(LIVES, G.lives + 1);
+    G.boards++; G.hints = Math.min(HINT_COMBO_MAX, G.hints + 1); const bonus = 300 + 100 * G.level + 100 * G.lives; G.score += bonus; const gain = G.lives < LIVES ? 1 : 0; G.lives = Math.min(LIVES, G.lives + 1);
     G.level++; G.resetT = COMBO_CLEAR_HOLD; Snd.win();
-    showCallout('CLEAR!', [{ t: `+${bonus.toLocaleString()}점`, s: 20, c: '#ffe14d' }, { t: gain ? '목숨 +1' : '목숨 가득', c: '#ff7b9c' }, { t: `다음 판 · 지뢰 ${comboMines(G.level)}개` },
+    showCallout('CLEAR!', [{ t: `+${bonus.toLocaleString()}점`, s: 20, c: '#ffe14d' }, { t: gain ? '목숨 +1' : '목숨 가득', c: '#ff7b9c' }, { t: '힌트 +1', c: '#4dff88' }, { t: `다음 판 · 지뢰 ${comboMines(G.level)}개` },
       { t: '탭하거나 Space를 누르면 바로 시작', s: 12, w: 600, c: '#8aa0c8' }], '#4dff88', COMBO_CLEAR_HOLD);
     board.cells.forEach(c => { if (c.mine) c.flag = true; });
     return;
@@ -347,7 +365,26 @@ const comboMines = (level) => Math.min(COMBO_MINES_MAX, COMBO_BOARD.mines + COMB
 function nextBoard() {
   if (mode === 'rush') { const s = rushSize(G.level); board = newBoard(s.rows, s.cols, s.mines); }
   else board = newBoard(COMBO_BOARD.rows, COMBO_BOARD.cols, comboMines(G.level));
-  geo = layout(board);
+  geo = layout(board); if (mode === 'rush') G.hints = HINT_START.rush; paintHints();
+}
+// ===== 힌트: 안전한 칸 하나를 알려 준다 (열어 주지는 않는다) =====
+function pickHint() {
+  const b = board; if (!b || !b.placed) return null; const all = [], near = [];
+  b.cells.forEach((c, i) => { if (!c.mine && !c.open && !c.flag) { all.push(i); if (neighbors(b, i).some(j => b.cells[j].open && b.cells[j].n > 0)) near.push(i); } });
+  const pool = near.length ? near : all; return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null; // 열린 숫자 옆의 칸을 우선한다(추리에 도움이 되도록)
+}
+function paintHints() { const n = G ? G.hints : 0; $('hintN').textContent = n; $('btnHint').classList.toggle('empty', n <= 0); }
+function useHint() {
+  if (state !== 'playing' || !G || G.over || G.resetT > 0) return;
+  if (!board.placed) { toast('먼저 아무 칸이나 열어 주세요. 첫 칸은 안전해요'); return; }
+  if (G.hints <= 0) { toast('힌트를 다 썼어요' + (mode === 'combo' ? ' (판을 깨면 +1)' : '')); return; }
+  const idx = pickHint(); if (idx === null) { toast('먼저 잘못 꽂힌 깃발을 확인해 보세요'); return; }
+  G.hints--; G.hintCount++; board.hint = idx; G.hintT = HINT_SHOW; let cost;
+  if (mode === 'classic') { G.t += HINT_COST.classic; G.hintPenalty += HINT_COST.classic; cost = `기록 +${HINT_COST.classic}초`; }
+  else if (mode === 'rush') { G.timeLeft = Math.max(0, G.timeLeft - HINT_COST.rush); cost = `시간 -${HINT_COST.rush}초`; }
+  else { G.combo = Math.max(0, G.combo - HINT_COST.combo); cost = `콤보 -${HINT_COST.combo}`; }
+  Snd.hint(); const p = cellCenter(idx); pop(p.x, p.y - 10, '안전!', '#4dff88'); burst(p.x, p.y, '#4dff88', 8);
+  toast(`초록색 칸은 안전해요 (${cost} · 남은 힌트 ${G.hints}개)`); paintHints();
 }
 // 닫힌 칸이 전부 깃발인데 클리어가 안 된 '막힌' 상태: 안전한 칸에 꽂힌 깃발(틀린 깃발)을 알려 준다.
 // 평소에는 어떤 깃발이 틀렸는지 알려 주지 않는다(추리의 재미). 막혔을 때만 표시한다.
@@ -374,15 +411,15 @@ function endGame(win) {
   const res = { win, rows: [], big: '', note: '', title: win ? 'CLEAR!' : 'GAME OVER', share: '' };
   const label = { classic: '클래식', rush: '러시', combo: '콤보' }[mode];
   if (mode === 'classic') {
-    const best = hi.classic || 0, isNew = win && (!best || G.t < best); if (isNew) { hi.classic = +G.t.toFixed(1) || 0.1; store.set(K.hi, hi); }
+    const L = LEVELS[curLevel], best = hi[L.key] || 0, isNew = win && (!best || G.t < best); if (isNew) { hi[L.key] = +G.t.toFixed(1) || 0.1; store.set(K.hi, hi); }
     res.big = win ? fmt(G.t) : `${board.opened}/${board.safeTotal}`;
-    res.rows = [['난이도', `초급 ${CLASSIC.rows}×${CLASSIC.cols} · 지뢰 ${CLASSIC.mines}`], ['사용한 깃발', G.flagsUsed], ['최고 기록', fmt(isNew ? G.t : (best || G.t))]];
+    res.rows = [['난이도', `${L.name} ${L.cols}×${L.rows} · 지뢰 ${L.mines}`], [G.hintCount ? '힌트' : '사용한 깃발', G.hintCount ? `${G.hintCount}회 (+${G.hintPenalty}초 포함)` : G.flagsUsed], ['최고 기록', fmt(isNew ? G.t : (best || G.t))]];
     res.note = !win ? '지뢰를 밟았어요. 다시 도전!' : isNew ? (best ? `신기록! ${fmt(best - G.t)} 단축` : '첫 기록 등록!') : `최고 기록까지 ${fmt(G.t - best)}`;
-    res.share = win ? `[${SHARE_NAME}] 클래식 초급 ${fmt(G.t)} 클리어!` : `[${SHARE_NAME}] 클래식 도전 중…`;
+    res.share = win ? `[${SHARE_NAME}] 클래식 ${L.name} ${fmt(G.t)} 클리어!${G.hintCount ? ` (힌트 ${G.hintCount}회)` : ''}` : `[${SHARE_NAME}] 클래식 ${L.name} 도전 중…`;
   } else {
     const best = hi[mode] || 0, isNew = G.score > best; if (isNew) { hi[mode] = G.score; store.set(K.hi, hi); }
     res.big = G.score.toLocaleString(); res.note = isNew && G.score > 0 ? '신기록!' : `최고 기록 ${Math.max(best, G.score).toLocaleString()}`;
-    res.rows = mode === 'rush' ? [['도달 레벨', G.level], ['푼 판 수', G.boards], ['최고 연속 클리어', G.bestStreak]] : [['푼 판 수', G.boards], ['연 칸', G.opened], ['최고 콤보 배율', '×' + G.maxMult]];
+    res.rows = (mode === 'rush' ? [['도달 레벨', G.level], ['푼 판 수', G.boards], ['최고 연속 클리어', G.bestStreak]] : [['푼 판 수', G.boards], ['연 칸', G.opened], ['최고 콤보 배율', '×' + G.maxMult]]).concat(G.hintCount ? [['힌트 사용', G.hintCount + '회']] : []);
     res.share = `[${SHARE_NAME}] ${label} ${G.score.toLocaleString()}점 (${mode === 'rush' ? `레벨 ${G.level}` : `${G.boards}판 클리어, 콤보 ×${G.maxMult}`})`;
   }
   lastResult = res; setTimeout(() => { if (state === 'playing' && G && G.over) showResult(); }, win ? 900 : 1300);
@@ -402,6 +439,7 @@ function stepGame(dt) {
   if (callout && (callout.life -= dt) <= 0) callout = null;
   if (state !== 'playing' || !G) return;
   if (G.over) return;
+  if (board && board.hint >= 0) { G.hintT -= dt; const hc = board.cells[board.hint]; if (G.hintT <= 0 || hc.open || hc.flag) board.hint = -1; }
   if (mode === 'classic' || mode === 'combo') { if (G.started) G.t += dt; }
   if (G.resetT > 0) { G.resetT -= dt; if (G.resetT <= 0) nextBoard(); }
   if (mode === 'rush') {
@@ -437,6 +475,10 @@ function drawBoard() {
     }
     if (!c.open) {
       drawHidden(x + pad, y + pad, w, cs, i === hover && state === 'playing');
+      if (i === b.hint) { // 힌트: 안전한 칸을 초록색으로 깜박여 알려 준다
+        const pulse = 0.5 + 0.5 * Math.sin(nowSec * 8); ctx.save(); ctx.shadowColor = '#4dff88'; ctx.shadowBlur = 12; ctx.strokeStyle = '#4dff88'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.55 + 0.45 * pulse; rr(x + pad, y + pad, w, w, cs * 0.16); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.strokeStyle = '#4dff88'; ctx.lineWidth = Math.max(2, cs * 0.09); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(cx - cs * 0.2, cy + cs * 0.02); ctx.lineTo(cx - cs * 0.05, cy + cs * 0.17); ctx.lineTo(cx + cs * 0.22, cy - cs * 0.16); ctx.stroke(); ctx.restore();
+      }
       if (c.flag) {
         const bad = b.wrong.has(i);
         if (bad) { const pulse = 0.5 + 0.5 * Math.sin(nowSec * 10); ctx.save(); ctx.globalAlpha = 0.3 + 0.55 * pulse; ctx.strokeStyle = '#ff3d71'; ctx.lineWidth = 3; rr(x + pad, y + pad, w, w, cs * 0.16); ctx.stroke(); ctx.restore(); }
@@ -485,7 +527,7 @@ function drawHud() {
   const waiting = !G.started && !G.over; // 시작 전에는 가운데에 안내를 보여 준다
   const mid = (t, c) => { ctx.textAlign = 'center'; if (waiting) { ctx.font = `700 12px ${FONT}`; ctx.fillStyle = 'rgba(234,246,255,.9)'; ctx.fillText('아무 칸이나 열어 시작 · 첫 칸은 안전!', W / 2 + 18, 76); return; } ctx.font = `800 15px ${FONT}`; ctx.fillStyle = c; ctx.fillText(t, W / 2, 76); };
   const minesLeft = board ? board.mines - board.flags : 0;
-  if (mode === 'classic') { left(fmt(G.t)); mid(`지뢰 ${minesLeft}`, '#ff6b8a'); right(hi.classic ? `최고 ${fmt(hi.classic)}` : '클래식'); }
+  if (mode === 'classic') { left(fmt(G.t)); mid(`지뢰 ${minesLeft}`, '#ff6b8a'); right(hi[LEVELS[curLevel].key] ? `${LEVELS[curLevel].name} · 최고 ${fmt(hi[LEVELS[curLevel].key])}` : `클래식 ${LEVELS[curLevel].name}`); }
   else if (mode === 'combo') {
     left(G.score.toLocaleString()); mid('♥'.repeat(Math.max(0, G.lives)) + '♡'.repeat(Math.max(0, LIVES - G.lives)), G.hurt > 0 && Math.floor(G.hurt * 8) % 2 ? '#ffffff' : '#ff3d71'); right(`${G.level}판 · ×${multOf()} 콤보 ${G.combo}`, '#ffe14d');
     const m = multOf(), segW = 24, gap = 3, x0 = (W - (MAX_MULT * segW + (MAX_MULT - 1) * gap)) / 2;
@@ -522,17 +564,18 @@ const ICON_ON = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 
 const ICON_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM17 9l5 6M22 9l-5 6"/></svg>';
 function paintSnd() { $('btnSnd').innerHTML = Snd.muted ? ICON_OFF : ICON_ON; }
 function paintTitle() {
-  $('rClassic').textContent = hi.classic ? `최고\n${fmt(hi.classic)}` : ''; $('rRush').textContent = hi.rush ? `최고\n${hi.rush.toLocaleString()}` : ''; $('rCombo').textContent = hi.combo ? `최고\n${hi.combo.toLocaleString()}` : '';
-  ['rClassic', 'rRush', 'rCombo'].forEach(id => { $(id).style.whiteSpace = 'pre-line'; });
+  const done = ['classic', 'classicMid', 'classicHard'].filter(k => hi[k]).length; $('rClassic').textContent = done ? `기록\n${done}/3` : '';
+  $('rEasy').textContent = hi.classic ? `최고\n${fmt(hi.classic)}` : ''; $('rMid').textContent = hi.classicMid ? `최고\n${fmt(hi.classicMid)}` : ''; $('rHard').textContent = hi.classicHard ? `최고\n${fmt(hi.classicHard)}` : ''; $('rRush').textContent = hi.rush ? `최고\n${hi.rush.toLocaleString()}` : ''; $('rCombo').textContent = hi.combo ? `최고\n${hi.combo.toLocaleString()}` : '';
+  ['rClassic', 'rEasy', 'rMid', 'rHard', 'rRush', 'rCombo'].forEach(id => { $(id).style.whiteSpace = 'pre-line'; });
 }
 function paintToggle() { $('tgOpen').classList.toggle('on', !flagMode); $('tgFlag').classList.toggle('on', flagMode); }
 
 // ===== 상태 전환 =====
 function setState(s) {
   state = s;
-  $('ovTitle').hidden = s !== 'title'; $('ovPause').hidden = s !== 'paused'; $('ovResult').hidden = s !== 'over';
-  const inGame = s === 'playing' || s === 'paused'; $('btnHome').hidden = !(inGame || s === 'over'); $('btnPause').hidden = s !== 'playing'; $('toggle').hidden = s !== 'playing';
-  if (s === 'title') $('btnHome').hidden = true;
+  $('ovTitle').hidden = s !== 'title'; $('ovLevel').hidden = s !== 'level'; $('ovPause').hidden = s !== 'paused'; $('ovResult').hidden = s !== 'over';
+  const inGame = s === 'playing' || s === 'paused'; $('btnHome').hidden = !(inGame || s === 'over'); $('btnPause').hidden = s !== 'playing'; $('btnHint').hidden = s !== 'playing'; $('toggle').hidden = s !== 'playing';
+  if (s === 'title' || s === 'level') $('btnHome').hidden = true;
 }
 function goTitle() { Snd.bgm(false); board = null; geo = null; G = null; parts = []; pops = []; callout = null; paintTitle(); setState('title'); }
 function pause(on) {
@@ -575,16 +618,18 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyF') { if (state === 'playing') { flagMode = !flagMode; paintToggle(); toast(flagMode ? '깃발 모드: 클릭하면 깃발 (F로 해제)' : '열기 모드'); } }
   else if (e.code === 'Escape' || e.code === 'KeyP') { if (state === 'playing') pause(true); else if (state === 'paused') pause(false); }
   else if (e.code === 'KeyM') Snd.toggle();
-  else if ((e.code === 'Enter' || e.code === 'KeyR') && state === 'over' && !e.repeat) startMode(mode);
+  else if (e.code === 'KeyH') { if (state === 'playing') useHint(); }
+  else if ((e.code === 'Enter' || e.code === 'KeyR') && state === 'over' && !e.repeat) startMode(mode, curLevel);
   else if (e.code === 'Space' && state === 'paused') { e.preventDefault(); pause(false); }
   else if ((e.code === 'Space' || e.code === 'Enter') && state === 'playing') { if (skipHold()) e.preventDefault(); }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); });
 window.addEventListener('resize', fit);
-$('mClassic').onclick = () => startMode('classic'); $('mRush').onclick = () => startMode('rush'); $('mCombo').onclick = () => startMode('combo');
+$('mClassic').onclick = () => { Snd.init(); paintTitle(); setState('level'); };
+$('lvEasy').onclick = () => startMode('classic', 'easy'); $('lvMid').onclick = () => startMode('classic', 'mid'); $('lvHard').onclick = () => startMode('classic', 'hard'); $('btnLvBack').onclick = goTitle; $('btnHint').onclick = useHint; $('mRush').onclick = () => startMode('rush'); $('mCombo').onclick = () => startMode('combo');
 $('tgOpen').onclick = () => { flagMode = false; paintToggle(); }; $('tgFlag').onclick = () => { flagMode = true; paintToggle(); };
 $('btnResume').onclick = () => pause(false); $('btnQuit').onclick = goTitle; $('btnTitle').onclick = goTitle; $('btnHome').onclick = goTitle;
-$('btnPause').onclick = () => pause(true); $('btnRetry').onclick = () => startMode(mode);
+$('btnPause').onclick = () => pause(true); $('btnRetry').onclick = () => startMode(mode, curLevel);
 $('btnSnd').onclick = () => { Snd.init(); Snd.toggle(); };
 $('btnCopy').onclick = () => lastResult && copyText(lastResult.share); $('btnCard').onclick = () => lastResult && saveCard(lastResult);
 

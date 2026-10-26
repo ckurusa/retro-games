@@ -2,6 +2,7 @@
 legacy/
 CLAUDE.md
 **/post.md
+devlog/
 .claude/
 Thumbs.db
 desktop.ini
