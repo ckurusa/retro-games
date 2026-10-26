@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'jaenmal-hanpan',
+    title: '잰말놀이 한판',
+    desc: '회전판을 돌려 규칙을 정하고, 카드를 뽑아 잰말을 소리 내어 말하는 온 가족 보드게임',
+    path: 'games/jaenmal-hanpan/jaenmal-hanpan.html',
+    icon: '🎡',
+    colors: ['#FFC933', '#FF7EB6'],
+    tags: ['가족', '파티', '잰말'],
+    isNew: true,
+    hiKey: 'retro_jaenmal-hanpan_hi',
+    hiLabel: (v) => (v && v.best ? `한 판 최고 ${v.best}점` : '')
+  },
+  {
     id: 'tadak-dungeon',
     title: '타닥타닥 던전',
     desc: '몬스터를 물리치며 키우는 한글 타자 실력. 낱말 배틀, 책 읽기, 스피드런까지',
