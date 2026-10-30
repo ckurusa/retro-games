@@ -16,7 +16,7 @@ window.GAMES = [
   {
     id: 'ppojjak-arcade',
     title: '뽀짝 오락실',
-    desc: '3D 인형뽑기, 와르르 코인 푸시푸시, 망치로 때리는 두더지 잡기, 펀치 머신까지! 레트로 음악과 함께 티켓을 모으는 오락실 4종',
+    desc: '5라운드 테마가 바뀌는 3D 인형뽑기(둘이서 VS 가능), 와르르 코인 푸시푸시, 망치로 때리는 두더지 잡기, 펀치 머신까지! 레트로 음악과 함께 티켓을 모으는 오락실 4종',
     path: 'games/ppojjak-arcade/ppojjak-arcade.html',
     icon: '🧸',
     colors: ['#ff4fd8', '#3df5ff'],
