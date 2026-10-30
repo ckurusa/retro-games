@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>하트 스도쿠 - 꼬마부터 고수까지</title>
+<meta name="description" content="4×4부터 9×9까지 5단계 스도쿠. 하트 3개와 콤보로 점수를 겨뤄요. 설치 없이 바로 플레이!">
+<meta property="og:title" content="하트 스도쿠 - 꼬마부터 고수까지">
+<meta property="og:description" content="초등 저학년용 4×4부터 어른용 9×9까지! 하트 3개와 콤보로 즐기는 스도쿠. 설치 없이 바로 플레이!">
+<meta property="og:image" content="https://ckurusa.github.io/retro-games/games/heart-sudoku/thumbnail.png">
+<meta property="og:url" content="https://ckurusa.github.io/retro-games/games/heart-sudoku/heart-sudoku.html">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#fff6e6; --card:#ffffff; --ink:#2b2350; --mute:#7c7499; --line:#d9d2ee; --thick:#2b2350;
+  --pink:#ff5a8a; --mint:#22c3a0; --sun:#ffb62b; --blue:#3f6df0; --sel:#ffe27a; --peer:#fff0c4; --same:#cfe0ff; --bad:#ff4d5e;
+  --font:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;color:var(--ink);font-family:var(--font);font-weight:700;touch-action:manipulation;-webkit-user-select:none;user-select:none;background:var(--bg);-webkit-text-size-adjust:100%}
+body{overflow:hidden;background:radial-gradient(120% 70% at 50% -10%,#ffe3a8 0%,var(--bg) 55%)}
+[hidden]{display:none!important}
+h1,h2,p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+.app{position:relative;height:100vh;height:100dvh;height:var(--appH,100dvh);max-width:620px;margin:0 auto}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;padding:12px 14px max(16px,env(safe-area-inset-bottom));overflow:auto}
+.btn{min-height:68px;padding:0 24px;border:0;border-radius:22px;background:var(--mint);color:#fff;font-weight:900;font-size:clamp(19px,5.4vw,24px);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 0 rgba(0,0,0,.16)}
+.btn:active:not([disabled]){transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.16)}
+.btn.pink{background:var(--pink)}.btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 3px var(--line),0 4px 0 rgba(0,0,0,.08)}
+.btn.wide{width:100%}.btn[disabled]{opacity:.45}
+.icon{min-height:56px;min-width:56px;padding:0 12px;border:0;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 3px var(--line);font-weight:800;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.icon svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+
+/* 시작 화면 */
+.logo{text-align:center;margin-top:6px}
+.logo h1{font-size:clamp(40px,min(13vw,calc(var(--appH,100dvh) * .085)),64px);font-weight:900;line-height:1.05;color:var(--pink);text-shadow:0 4px 0 #ffd0de}
+.logo p{margin-top:6px;color:var(--mute);font-size:clamp(14px,4vw,17px)}
+.modeRow{display:flex;gap:8px;margin:12px 0 4px}
+.modeRow button{flex:1;min-height:56px;border:0;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 3px var(--line);font-size:16px;font-weight:900;cursor:pointer}
+.modeRow button[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:none}
+.levels{display:grid;gap:10px;margin-top:8px}
+.lv{display:flex;align-items:center;gap:12px;min-height:72px;padding:8px 14px;border:0;border-radius:20px;background:var(--card);box-shadow:inset 0 0 0 3px var(--line),0 4px 0 rgba(0,0,0,.07);text-align:left;cursor:pointer}
+.lv:active{transform:translateY(2px)}
+.lv .em{font-size:34px;line-height:1;flex:none}
+.lv .tx{flex:1;min-width:0}.lv b{display:block;font-size:20px}.lv small{color:var(--mute);font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.lv .best{flex:none;text-align:right;font-size:13px;color:var(--sun);font-weight:900;min-width:64px}
+.help{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.7);font-size:15px;line-height:1.55}
+.help summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:900}
+.help li{margin:2px 0}
+.topTools{display:flex;justify-content:flex-end;gap:8px}
+
+/* 플레이 */
+.bar{display:flex;align-items:center;gap:8px}
+.bar .info{flex:1;text-align:center;font-weight:900;font-size:18px;min-width:0}
+.bar .info small{display:block;color:var(--mute);font-size:12px}
+.stats{display:flex;gap:8px;margin-top:8px}
+.pill{flex:1;min-width:0;padding:5px 8px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 2px var(--line);text-align:center;font-size:13px;color:var(--mute)}
+.pill b{display:block;font-size:21px;color:var(--ink);line-height:1.15;overflow-wrap:anywhere}
+.pill.hearts b{color:var(--pink);letter-spacing:2px}
+.pill.combo.hot b{color:var(--sun)}
+.boardWrap{display:grid;place-items:center;margin-top:10px}
+.board{display:grid;border:4px solid var(--thick);border-radius:10px;overflow:hidden;background:#fff;touch-action:manipulation;box-shadow:0 8px 0 rgba(43,35,80,.12)}
+.board.shake{animation:shk .35s}
+@keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-7px,0)}40%{transform:translate(6px,0)}60%{transform:translate(-4px,0)}80%{transform:translate(3px,0)}}
+.cell{position:relative;display:grid;place-items:center;padding:0;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff;font-size:calc(var(--cs) * .58);font-weight:800;line-height:1;color:var(--blue);cursor:pointer;min-width:0;min-height:0}
+.cell.given{color:var(--ink);font-weight:900;background:#faf7ff}
+.cell.tr{border-right:3px solid var(--thick)}.cell.tb{border-bottom:3px solid var(--thick)}
+.cell.peer{background:var(--peer)}.cell.same{background:var(--same)}.cell.sel{background:var(--sel);box-shadow:inset 0 0 0 3px var(--ink)}
+.cell.bad{background:#ffd5da;color:var(--bad);animation:shk .35s}
+.cell.pop{animation:pop .3s}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.cell .nt{position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;justify-items:center;font-size:calc(var(--cs) * .25);font-weight:800;color:var(--mute);line-height:1}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.tool{min-height:60px;border:0;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 3px var(--line);font-size:14px;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.1}
+.tool span{font-size:20px}
+.tool[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:none}
+.tool[disabled]{opacity:.4}
+.pad{display:grid;gap:8px;margin-top:10px}
+.pad button{min-height:64px;border:0;border-radius:18px;background:var(--blue);color:#fff;font-size:28px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18)}
+.pad button:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.pad button.erase{background:#fff;color:var(--ink);font-size:17px;box-shadow:inset 0 0 0 3px var(--line),0 5px 0 rgba(0,0,0,.1)}
+.pad button.done{opacity:.28}
+.pad button.armed{background:var(--pink)}
+.pad.memo button:not(.erase){background:#fff;color:var(--blue);box-shadow:inset 0 0 0 3px var(--blue),0 5px 0 rgba(0,0,0,.1)}
+.ov{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:20px;background:rgba(255,246,230,.96)}
+.ov .box{width:min(100%,360px);display:grid;gap:12px;text-align:center}
+.ov h2{font-size:32px}
+
+/* 결과 */
+.crown{text-align:center;margin-top:14px;color:var(--mute);font-size:16px;letter-spacing:.08em}
+.big{text-align:center;font-size:clamp(64px,20vw,104px);font-weight:900;line-height:1;color:var(--pink);text-shadow:0 5px 0 #ffd0de;margin-top:8px}
+.big small{font-size:.3em;color:var(--ink);text-shadow:none}
+.grade{text-align:center;font-size:clamp(24px,7vw,32px);margin-top:8px}
+.newrec{display:inline-block;margin-top:8px;padding:5px 16px;border-radius:999px;background:var(--sun);color:var(--ink);font-size:15px}
+.chips{margin:14px 0;padding:12px;border-radius:18px;background:rgba(255,255,255,.8);display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chips span{padding:5px 12px;border-radius:999px;background:#f1ecff;font-size:15px;overflow-wrap:anywhere}
+.acts{display:grid;gap:10px;margin-top:auto;padding-top:8px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:20}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pcOnly{display:none}
+@media (hover:hover) and (pointer:fine){.touchOnly{display:none!important}.pcOnly{display:list-item}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- 시작 화면 -->
+  <section class="screen" id="scrTitle">
+    <div class="topTools"><button class="icon bSnd" aria-label="소리 켜기/끄기"></button></div>
+    <header class="logo"><h1>하트<br>스도쿠</h1><p>꼬마부터 고수까지 · 하트 3개로 도전!</p></header>
+    <div class="modeRow" role="group" aria-label="모드">
+      <button id="mHeart" aria-pressed="true">♥ 하트 모드</button>
+      <button id="mPractice" aria-pressed="false">✏ 연습 모드</button>
+    </div>
+    <div class="levels" id="levels"></div>
+    <details class="help"><summary>게임 방법</summary><ul>
+      <li>빈칸을 탭하고 아래 <b>숫자 버튼</b>을 눌러요</li>
+      <li>가로줄·세로줄·굵은 네모 칸에 <b>같은 숫자가 없게</b> 채워요</li>
+      <li>틀리면 하트가 깎여요(3개). 맞히면 <b>콤보</b>로 점수가 올라가요</li>
+      <li><b>메모</b>를 켜면 작은 숫자로 후보를 적어요. <b>힌트</b>는 3번까지</li>
+      <li class="pcOnly">키보드: 숫자키 입력, 방향키 이동, Backspace 지우기, N 메모, U 되돌리기, H 힌트, P 일시정지, M 소리</li>
+    </ul></details>
+  </section>
+
+  <!-- 플레이 -->
+  <section class="screen" id="scrPlay" hidden>
+    <div class="bar">
+      <button class="icon" id="btnHome" aria-label="처음 화면으로"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>홈</button>
+      <div class="info"><small id="lvName"></small><span id="timer">00:00</span></div>
+      <button class="icon" id="btnPause" aria-label="일시정지"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      <button class="icon bSnd" aria-label="소리 켜기/끄기"></button>
+    </div>
+    <div class="stats"><div class="pill hearts">하트<b id="stHearts">♥♥♥</b></div><div class="pill">점수<b id="stScore">0</b></div><div class="pill combo" id="pillCombo">콤보<b id="stCombo">0</b></div></div>
+    <div class="boardWrap"><div class="board" id="board"></div></div>
+    <div class="tools">
+      <button class="tool" id="tMemo" aria-pressed="false"><span>✎</span>메모</button>
+      <button class="tool" id="tUndo"><span>↩</span>되돌리기</button>
+      <button class="tool" id="tHint"><span>💡</span><i id="hintLeft" style="font-style:normal">힌트 3</i></button>
+      <button class="tool" id="tChain" aria-pressed="false"><span>⚡</span>연속 입력</button>
+    </div>
+    <div class="pad" id="pad"></div>
+    <div class="sr" id="live" aria-live="polite"></div>
+    <div class="ov" id="ovPause" hidden><div class="box"><h2>일시정지</h2><p style="color:var(--mute)">숫자는 가려져 있어요</p><button class="btn wide" id="btnResume">이어서 하기</button><button class="btn ghost wide" id="btnQuit">처음 화면으로</button></div></div>
+  </section>
+
+  <!-- 결과 -->
+  <section class="screen" id="scrResult" hidden>
+    <p class="crown" id="rsTitle">하트 스도쿠</p>
+    <div class="big"><span id="rsBig">0</span><small id="rsUnit"> 점</small></div>
+    <p class="grade" id="rsGrade"></p>
+    <div style="text-align:center"><span class="newrec" id="rsNew" hidden>🎉 신기록!</span></div>
+    <div class="chips" id="rsChips"></div>
+    <div class="acts">
+      <button class="btn wide" id="rsAgain">새 판!</button>
+      <button class="btn pink wide" id="rsRetry" hidden>같은 판 다시</button>
+      <div class="row"><button class="btn ghost" id="rsCopy" style="min-height:60px;font-size:17px">결과 복사</button><button class="btn ghost" id="rsCard" style="min-height:60px;font-size:17px">카드 저장</button></div>
+      <button class="btn ghost wide" id="rsHome" style="min-height:60px;font-size:17px">난이도 고르기</button>
+    </div>
+  </section>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ===== 설정 =====
+const GAME_ID = 'heart-sudoku', GAME_NAME = '하트 스도쿠';
+const K = { hi: `retro_${GAME_ID}_hi`, mute: `retro_${GAME_ID}_mute`, mode: `retro_${GAME_ID}_mode` };
+const HEARTS = 3, HINTS = 3, CHAIN_STEP = 3, CHAIN_MAX = 5, HINT_COST = 100, HEART_BONUS = 100, BASE_PTS = 10;
+const BAD_FLASH_MS = 550;
+// 단계: clues는 남겨 둘 처음 숫자 개수(적을수록 어렵다), par는 시간 보너스가 시작되는 기준(초), mult는 점수 배율
+const LEVELS = [
+  { id: 0, name: '꼬마', sub: '4×4 · 숫자 1~4 · 저학년', icon: '🐣', n: 4, bh: 2, bw: 2, clues: 9, par: 90, mult: 1 },
+  { id: 1, name: '초급', sub: '6×6 · 숫자 1~6', icon: '🐥', n: 6, bh: 2, bw: 3, clues: 20, par: 240, mult: 1.5 },
+  { id: 2, name: '쉬움', sub: '9×9 · 힌트가 넉넉해요', icon: '🌱', n: 9, bh: 3, bw: 3, clues: 40, par: 600, mult: 2 },
+  { id: 3, name: '보통', sub: '9×9 · 생각이 필요해요', icon: '🔥', n: 9, bh: 3, bw: 3, clues: 32, par: 900, mult: 3 },
+  { id: 4, name: '어려움', sub: '9×9 · 숫자가 거의 없어요', icon: '💎', n: 9, bh: 3, bw: 3, clues: 25, par: 1200, mult: 4 }
+];
+const FX_COLORS = ['#ffb62b', '#ff5a8a', '#22c3a0', '#3f6df0', '#a98bff'];
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// ===== 저장 (실패해도 게임은 동작) =====
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 저장 불가 환경 */ } }
+};
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+let hi = store.get(K.hi, {}); if (!hi || typeof hi !== 'object') hi = {}; if (!hi.best || typeof hi.best !== 'object') hi.best = {};
+let practice = !!store.get(K.mode, false);
+
+// ===== 퍼즐 만들기 (순수 함수: 화면과 무관) =====
+const boxOf = (L, r, c) => Math.floor(r / L.bh) * (L.n / L.bw) + Math.floor(c / L.bw);
+function popcount(m) { let k = 0; while (m) { m &= m - 1; k++; } return k; }
+function shuffle(a, rnd) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+// 해의 개수를 limit개까지 센다. randomRnd가 있으면 숫자를 섞어 넣어 첫 해를 g에 남긴다
+function solve(g, L, limit, randomRnd) {
+  const n = L.n, N = n * n, full = (1 << n) - 1, rm = new Int32Array(n), cm = new Int32Array(n), bm = new Int32Array(n);
+  for (let i = 0; i < N; i++) if (g[i]) { const b = 1 << (g[i] - 1), r = (i / n) | 0, c = i % n; rm[r] |= b; cm[c] |= b; bm[boxOf(L, r, c)] |= b; }
+  let cnt = 0;
+  const rec = () => {
+    let bi = -1, bc = 99, bmask = 0;
+    for (let i = 0; i < N; i++) {
+      if (g[i]) continue; const r = (i / n) | 0, c = i % n, m = full & ~(rm[r] | cm[c] | bm[boxOf(L, r, c)]), k = popcount(m);
+      if (k < bc) { bc = k; bi = i; bmask = m; if (k <= 1) break; }
+    }
+    if (bi < 0) { cnt++; return cnt >= limit; }
+    if (bc === 0) return false;
+    const r = (bi / n) | 0, c = bi % n, bx = boxOf(L, r, c), ds = []; for (let d = 1; d <= n; d++) if (bmask & (1 << (d - 1))) ds.push(d);
+    if (randomRnd) shuffle(ds, randomRnd);
+    for (const d of ds) {
+      const b = 1 << (d - 1); g[bi] = d; rm[r] |= b; cm[c] |= b; bm[bx] |= b;
+      if (rec()) return true;
+      g[bi] = 0; rm[r] &= ~b; cm[c] &= ~b; bm[bx] &= ~b;
+    }
+    return false;
+  };
+  rec(); return cnt;
+}
+// 완성판에서 칸을 하나씩 지우되, 해가 하나뿐일 때만 지운다
+function makePuzzle(L, rnd) {
+  const n = L.n, N = n * n, sol = new Int8Array(N); solve(sol, L, 1, rnd);
+  const g = sol.slice(), order = shuffle(Array.from({ length: N }, (_, i) => i), rnd); let clues = N;
+  for (const i of order) {
+    if (clues <= L.clues) break; const keep = g[i]; g[i] = 0;
+    if (solve(g.slice(), L, 2, null) !== 1) g[i] = keep; else clues--;
+  }
+  return { sol, given: g, clues };
+}
+// 점수: 연속으로 맞힐수록 배율이 오른다(3번마다 +1, 최대 5배)
+const chainMult = (combo) => Math.min(CHAIN_MAX, 1 + Math.floor((combo - 1) / CHAIN_STEP));
+const fillPts = (L, combo) => Math.round(BASE_PTS * L.mult * chainMult(combo));
+function clearBonus(L, secs, hearts, hints, practiceMode) {
+  const time = Math.round(Math.max(0, L.par - secs) * L.mult), heart = practiceMode ? 0 : hearts * HEART_BONUS, cost = hints * HINT_COST;
+  return { time, heart, cost, total: Math.max(0, time + heart - cost) };
+}
+const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function gradeOf(mistakes, hints) { return mistakes === 0 && hints === 0 ? '완벽해요!' : mistakes <= 1 && hints <= 1 ? '멋져요!' : mistakes <= 3 ? '잘했어요!' : '클리어!'; }
+
+// ===== 사운드 (WebAudio 합성) =====
+const Snd = {
+  ctx: null, master: null, muted: !!store.get(K.mute, false),
+  init() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    try { this.ctx = new AC(); this.master = this.ctx.createGain(); this.master.gain.value = 0.5; this.master.connect(this.ctx.destination); } catch (e) { this.ctx = null; }
+  },
+  tone(f, d, type = 'triangle', v = 0.08, delay = 0, to = null) {
+    if (!this.ctx || this.muted) return; const t = this.ctx.currentTime + delay, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(this.master); o.start(t); o.stop(t + d + 0.03);
+  },
+  tap() { this.tone(620, 0.04, 'triangle', 0.05); },
+  put(combo) { const f = 520 * Math.pow(1.0595, Math.min(12, combo) * 1); this.tone(f, 0.09, 'square', 0.05); this.tone(f * 1.5, 0.12, 'triangle', 0.05, 0.06); },
+  note() { this.tone(900, 0.03, 'square', 0.03); }, erase() { this.tone(330, 0.07, 'triangle', 0.05, 0, 220); },
+  wrong() { this.tone(200, 0.28, 'sawtooth', 0.07, 0, 90); },
+  combo() { [784, 988, 1175].forEach((f, i) => this.tone(f, 0.1, 'square', 0.05, i * 0.06)); },
+  hint() { this.tone(880, 0.1, 'sine', 0.07); this.tone(1320, 0.16, 'sine', 0.06, 0.08); },
+  clear() { [523, 659, 784, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.16, 'triangle', 0.09, i * 0.1)); },
+  over() { [392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.25, 'triangle', 0.08, i * 0.18)); },
+  toggle() { this.muted = !this.muted; store.set(K.mute, this.muted); paintSnd(); }
+};
+const ICON_ON = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM17 9l5 6M22 9l-5 6"/></svg>';
+function paintSnd() { document.querySelectorAll('.bSnd').forEach(b => { b.innerHTML = Snd.muted ? ICON_OFF : ICON_ON; b.setAttribute('aria-pressed', String(!Snd.muted)); }); }
+
+// ===== 상태 =====
+let G = null, state = 'TITLE', lastResult = null, lastLevel = 0, homeArmed = -1e9, tickT = 0;
+const cells = [];
+function newGame(L, puzzle) {
+  const N = L.n * L.n, p = puzzle || makePuzzle(L, Math.random);
+  return { L, sol: p.sol, given: p.given, puzzle: p, val: Int8Array.from(p.given), notes: new Uint16Array(N), hearts: HEARTS, practice, score: 0, combo: 0, bestCombo: 0, mistakes: 0, hints: 0,
+    elapsed: 0, sel: -1, armed: 0, memo: false, chain: false, undo: [], over: false, badIdx: -1, badVal: 0, filled: 0 };
+}
+const peers = (L, a, b) => { const n = L.n, ra = (a / n) | 0, ca = a % n, rb = (b / n) | 0, cb = b % n; return ra === rb || ca === cb || boxOf(L, ra, ca) === boxOf(L, rb, cb); };
+const remainOf = (d) => { let k = 0; for (let i = 0; i < G.val.length; i++) if (G.val[i] === d) k++; return G.L.n - k; };
+
+// ===== 화면 =====
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+let toastT = 0;
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+const say = (m) => { $('live').textContent = ''; setTimeout(() => { $('live').textContent = m; }, 30); };
+function show(name) { state = name; $('scrTitle').hidden = name !== 'TITLE'; $('scrPlay').hidden = !(name === 'PLAYING' || name === 'PAUSED'); $('scrResult').hidden = !(name === 'CLEAR' || name === 'GAMEOVER'); $('ovPause').hidden = name !== 'PAUSED'; }
+function buildTitle() {
+  const box = $('levels'); box.textContent = '';
+  LEVELS.forEach(L => {
+    const b = el('button', 'lv'), best = hi.best[L.id];
+    b.append(el('span', 'em', L.icon)); const tx = el('span', 'tx'); tx.append(el('b', null, L.name), el('small', null, L.sub)); b.append(tx, el('span', 'best', best ? `최고 ${best.s}점` : ''));
+    b.addEventListener('click', () => { Snd.init(); Snd.tap(); start(L.id); }); box.append(b);
+  });
+  $('mHeart').setAttribute('aria-pressed', String(!practice)); $('mPractice').setAttribute('aria-pressed', String(practice));
+}
+// 판 크기를 화면에 맞춘다 (보이는 높이를 직접 재서, 아래 버튼이 가려지지 않게)
+function fit() {
+  try { document.documentElement.style.setProperty('--appH', Math.min(window.innerHeight || 9999, (window.visualViewport && window.visualViewport.height) || 9999, document.documentElement.clientHeight || 9999) + 'px'); } catch (e) { /* 무시 */ }
+  if (!G) return; const appH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--appH')) || innerHeight;
+  const w = Math.max(220, Math.min(560, innerWidth - 28, appH - (G.L.n === 9 ? 400 : 380))), n = G.L.n, cs = Math.floor((w - 8) / n), bw = cs * n + 8;
+  $('board').style.width = bw + 'px'; $('board').style.setProperty('--cs', cs + 'px');
+}
+function buildBoard() {
+  const L = G.L, n = L.n, b = $('board'); b.textContent = ''; cells.length = 0; b.style.gridTemplateColumns = `repeat(${n},1fr)`;
+  for (let i = 0; i < n * n; i++) {
+    const r = (i / n) | 0, c = i % n, e = el('button', 'cell'); e.setAttribute('aria-label', `${r + 1}행 ${c + 1}열`);
+    if ((c + 1) % L.bw === 0 && c < n - 1) e.classList.add('tr'); if ((r + 1) % L.bh === 0 && r < n - 1) e.classList.add('tb');
+    e.addEventListener('pointerdown', (ev) => { ev.preventDefault(); tapCell(i); }); e.addEventListener('click', (ev) => { if (ev.detail === 0) tapCell(i); });
+    b.append(e); cells.push(e);
+  }
+  const pad = $('pad'); pad.textContent = ''; pad.style.gridTemplateColumns = `repeat(${n === 6 ? 4 : 5},1fr)`;
+  for (let d = 1; d <= n; d++) { const p = el('button', null, String(d)); p.dataset.d = d; p.setAttribute('aria-label', `숫자 ${d}`); p.addEventListener('pointerdown', (ev) => { ev.preventDefault(); tapNum(d); }); p.addEventListener('click', (ev) => { if (ev.detail === 0) tapNum(d); }); pad.append(p); }
+  const er = el('button', 'erase', '지우기'); er.addEventListener('pointerdown', (ev) => { ev.preventDefault(); erase(); }); er.addEventListener('click', (ev) => { if (ev.detail === 0) erase(); }); pad.append(er);
+  fit();
+}
+function paint() {
+  if (!G) return; const L = G.L, n = L.n, selV = G.sel >= 0 ? G.val[G.sel] : 0, hot = G.armed || selV;
+  for (let i = 0; i < n * n; i++) {
+    const e = cells[i], v = G.val[i], bad = i === G.badIdx;
+    let cls = 'cell' + (e.classList.contains('tr') ? ' tr' : '') + (e.classList.contains('tb') ? ' tb' : '') + (G.given[i] ? ' given' : '');
+    if (i === G.sel) cls += ' sel'; else if (G.sel >= 0 && peers(L, G.sel, i)) cls += ' peer';
+    if (i !== G.sel && hot && v === hot && !bad) cls += ' same'; if (bad) cls += ' bad'; if (e._pop) cls += ' pop';
+    e.className = cls; e._pop = false;
+    const key = bad ? 'b' + G.badVal : v ? 'v' + v : 'n' + G.notes[i];
+    if (e._key !== key) {
+      e._key = key; e.textContent = '';
+      if (bad) e.textContent = G.badVal; else if (v) e.textContent = v;
+      else if (G.notes[i]) { const nt = el('span', 'nt'); for (let d = 1; d <= n; d++) nt.append(el('i', null, G.notes[i] & (1 << (d - 1)) ? String(d) : '')); nt.querySelectorAll('i').forEach(x => { x.style.fontStyle = 'normal'; }); e.append(nt); }
+    }
+  }
+  const pb = $('pad').children; for (let d = 1; d <= n; d++) { pb[d - 1].classList.toggle('done', remainOf(d) <= 0); pb[d - 1].classList.toggle('armed', G.chain && G.armed === d); }
+  $('pad').classList.toggle('memo', G.memo); $('tMemo').setAttribute('aria-pressed', String(G.memo)); $('tChain').setAttribute('aria-pressed', String(G.chain));
+  $('stHearts').textContent = G.practice ? '∞' : '♥'.repeat(clamp(G.hearts, 0, HEARTS)) + '♡'.repeat(clamp(HEARTS - G.hearts, 0, HEARTS));
+  $('stScore').textContent = G.score; $('stCombo').textContent = G.combo; $('pillCombo').classList.toggle('hot', G.combo >= CHAIN_STEP);
+  $('hintLeft').textContent = `힌트 ${Math.max(0, HINTS - G.hints)}`; $('tHint').disabled = G.hints >= HINTS; $('tUndo').disabled = !G.undo.length;
+  $('timer').textContent = fmtTime(G.elapsed); $('lvName').textContent = `${L.name} · ${G.practice ? '연습' : '하트'}`;
+}
+
+// ===== 진행 =====
+function start(levelId, puzzle) {
+  lastLevel = levelId; const L = LEVELS[levelId]; toast('판을 만드는 중…');
+  setTimeout(() => {                                          // 화면이 먼저 그려진 뒤 퍼즐을 만든다
+    G = newGame(L, puzzle); buildBoard(); show('PLAYING'); paint(); tickT = performance.now(); say(`${L.name} 시작`); toast(`${L.name} 시작! 빈칸을 탭해요`);
+  }, 30);
+}
+function snapshot() { G.undo.push({ val: G.val.slice(), notes: G.notes.slice(), filled: G.filled }); if (G.undo.length > 200) G.undo.shift(); }
+function tapCell(i) {
+  if (state !== 'PLAYING' || G.over) return; Snd.init();
+  if (G.chain && G.armed && !G.given[i] && G.val[i] === 0) { G.sel = i; place(i, G.armed); return; }
+  G.sel = i; if (G.chain && G.armed === 0 && G.val[i]) { G.armed = G.val[i]; } Snd.tap(); paint();
+}
+function tapNum(d) {
+  if (state !== 'PLAYING' || G.over) return; Snd.init();
+  if (G.chain) { G.armed = G.armed === d ? 0 : d; Snd.tap(); paint(); return; }       // 연속 입력: 숫자를 고른 뒤 칸을 연달아 탭
+  if (G.sel < 0) { toast('먼저 빈칸을 탭해요'); return; }
+  place(G.sel, d);
+}
+function place(i, d) {
+  if (G.given[i] || G.val[i] === d && !G.memo) { if (G.given[i]) toast('처음부터 있던 숫자예요'); return; }
+  if (G.val[i] !== 0) { toast('이미 숫자가 있어요. 지우기를 눌러요'); return; }
+  const L = G.L;
+  if (G.memo) { snapshot(); G.notes[i] ^= (1 << (d - 1)); Snd.note(); paint(); return; }
+  if (d === G.sol[i]) {
+    snapshot(); G.val[i] = d; G.notes[i] = 0; G.filled++; G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo);
+    for (let j = 0; j < L.n * L.n; j++) if (peers(L, i, j)) G.notes[j] &= ~(1 << (d - 1));
+    const gain = fillPts(L, G.combo); G.score += gain; cells[i]._pop = true; Snd.put(G.combo);
+    if (G.combo % 5 === 0) { Snd.combo(); toast(`${G.combo} 콤보! +${gain}`); if (!REDUCED) confetti(20); }
+    paint(); if (G.val.every((v, k) => v === G.sol[k])) win();
+  } else {
+    G.badIdx = i; G.badVal = d; G.mistakes++; G.combo = 0; Snd.wrong(); buzz(80);
+    if (!G.practice) G.hearts = Math.max(0, G.hearts - 1);
+    const b = $('board'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+    toast(G.practice ? '다른 숫자예요. 다시 생각해 봐요' : `앗, 틀렸어요! 하트 ${G.hearts}개 남음`);
+    paint(); setTimeout(() => { if (G && G.badIdx === i) { G.badIdx = -1; paint(); } }, BAD_FLASH_MS);
+    if (!G.practice && G.hearts <= 0) lose();
+  }
+}
+const buzz = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* 진동 불가 */ } };
+function erase() {
+  if (state !== 'PLAYING' || G.over || G.sel < 0) return; const i = G.sel;
+  if (G.given[i]) { toast('처음부터 있던 숫자예요'); return; } if (!G.val[i] && !G.notes[i]) return;
+  snapshot(); G.val[i] = 0; G.notes[i] = 0; Snd.erase(); paint();
+}
+function undo() {
+  if (state !== 'PLAYING' || G.over || !G.undo.length) return; const s = G.undo.pop(); G.val = s.val; G.notes = s.notes; G.filled = s.filled; Snd.tap(); paint();
+}
+function hint() {
+  if (state !== 'PLAYING' || G.over || G.hints >= HINTS) return; let i = G.sel;
+  if (i < 0 || G.val[i] !== 0) { const empties = []; G.val.forEach((v, k) => { if (!v) empties.push(k); }); if (!empties.length) return; i = empties[Math.floor(Math.random() * empties.length)]; }
+  snapshot(); G.hints++; G.val[i] = G.sol[i]; G.notes[i] = 0; G.sel = i; G.combo = 0; cells[i]._pop = true; Snd.hint(); toast('힌트! 한 칸을 알려 줬어요');
+  for (let j = 0; j < G.val.length; j++) if (peers(G.L, i, j)) G.notes[j] &= ~(1 << (G.sol[i] - 1));
+  paint(); if (G.val.every((v, k) => v === G.sol[k])) win();
+}
+function pause(on) { if (state !== 'PLAYING' && state !== 'PAUSED') return; if (G && G.over) return; show(on ? 'PAUSED' : 'PLAYING'); if (!on) tickT = performance.now(); }
+function tick() { if (state !== 'PLAYING' || !G) return; const now = performance.now(); G.elapsed += (now - tickT) / 1000; tickT = now; $('timer').textContent = fmtTime(G.elapsed); }
+
+// ===== 결과 =====
+function finish(kind) {
+  G.over = true; const L = G.L, secs = Math.round(G.elapsed), chips = [];
+  if (kind === 'CLEAR') {
+    const b = clearBonus(L, secs, G.hearts, G.hints, G.practice); G.score += b.total; const best = hi.best[L.id], isNew = !G.practice && (!best || G.score > best.s);
+    if (isNew) { hi.best[L.id] = { s: G.score, t: secs }; hi.top = Math.max(hi.top || 0, G.score); store.set(K.hi, hi); }
+    chips.push(`시간 ${fmtTime(secs)}`, `실수 ${G.mistakes}번`, `힌트 ${G.hints}번`, `최고 콤보 ${G.bestCombo}`);
+    if (b.time) chips.push(`시간 보너스 +${b.time}`); if (b.heart) chips.push(`남은 하트 +${b.heart}`); if (b.cost) chips.push(`힌트 -${b.cost}`); if (G.practice) chips.push('연습 모드(기록 없음)');
+    lastResult = { kind, name: L.name, big: String(G.score), unit: ' 점', grade: gradeOf(G.mistakes, G.hints), isNew, chips, share: `${L.name} ${fmtTime(secs)} · 실수 ${G.mistakes}번` };
+    $('rsTitle').textContent = `${GAME_NAME} · ${L.name} 클리어!`; Snd.clear(); if (!REDUCED) confetti(isNew ? 160 : 80);
+  } else {
+    const total = L.n * L.n, given = G.given.reduce((s, v) => s + (v ? 1 : 0), 0), pct = Math.round((G.filled / Math.max(1, total - given)) * 100);
+    chips.push(`${pct}% 채웠어요`, `시간 ${fmtTime(secs)}`, `최고 콤보 ${G.bestCombo}`);
+    lastResult = { kind, name: L.name, big: String(G.score), unit: ' 점', grade: '하트가 다 떨어졌어요', isNew: false, chips, share: `${L.name} ${pct}%까지 도전` };
+    $('rsTitle').textContent = `${GAME_NAME} · ${L.name}`; Snd.over();
+  }
+  $('rsBig').textContent = lastResult.big; $('rsUnit').textContent = lastResult.unit; $('rsGrade').textContent = lastResult.grade; $('rsNew').hidden = !lastResult.isNew;
+  const bx = $('rsChips'); bx.textContent = ''; chips.forEach(c => bx.append(el('span', null, c)));
+  $('rsRetry').hidden = kind === 'CLEAR'; $('rsAgain').textContent = '새 판!';
+  setTimeout(() => { show(kind); say(`${lastResult.grade} ${lastResult.big}점`); }, kind === 'CLEAR' ? 500 : 700);
+}
+const win = () => finish('CLEAR'), lose = () => finish('GAMEOVER');
+let fxParts = [], fxRaf = 0;
+function confetti(n) {
+  const cv = $('fx'); cv.width = innerWidth; cv.height = innerHeight;
+  for (let i = 0; i < n; i++) fxParts.push({ x: innerWidth / 2 + (Math.random() - 0.5) * 200, y: innerHeight * 0.4, vx: (Math.random() - 0.5) * 14, vy: -7 - Math.random() * 9, s: 6 + Math.random() * 7, c: FX_COLORS[i % 5], r: Math.random() * 6, life: 1.4 + Math.random() * 0.8 });
+  if (!fxRaf) fxRaf = requestAnimationFrame(fxLoop);
+}
+function fxLoop() {
+  const cv = $('fx'), x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); fxParts = fxParts.filter(p => (p.life -= 0.016) > 0);
+  fxParts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.35; p.vx *= 0.99; p.r += 0.2; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore(); });
+  fxRaf = fxParts.length ? requestAnimationFrame(fxLoop) : 0;
+}
+function shareText() { const r = lastResult; return r ? `[${GAME_NAME}] ${r.kind === 'CLEAR' ? r.name + ' 클리어! ' + r.big + '점' : r.share} (${r.share})` : `[${GAME_NAME}]`; }
+function copyText() {
+  const full = shareText() + ' ' + location.href;
+  const fb = () => { const a = document.createElement('textarea'); a.value = full; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); toast('복사했어요!'); } catch (e) { toast('복사하지 못했어요'); } a.remove(); };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(() => toast('복사했어요!'), fb); else fb(); } catch (e) { fb(); }
+}
+function saveCard() {
+  try {
+    const r = lastResult; if (!r) return; const c = document.createElement('canvas'); c.width = 1200; c.height = 630; const x = c.getContext('2d'), F = '"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif';
+    const g = x.createRadialGradient(600, -40, 40, 600, 200, 900); g.addColorStop(0, '#ffe3a8'); g.addColorStop(0.6, '#fff6e6'); g.addColorStop(1, '#fff0d4'); x.fillStyle = g; x.fillRect(0, 0, 1200, 630);
+    x.textAlign = 'center'; x.fillStyle = '#7c7499'; x.font = `800 38px ${F}`; x.fillText(`${GAME_NAME} · ${r.name}`, 600, 80);
+    x.save(); x.shadowColor = '#ffd0de'; x.shadowBlur = 0; x.shadowOffsetY = 8; x.fillStyle = '#ff5a8a'; x.font = `900 200px ${F}`; x.fillText(r.big, 560, 300); x.restore();
+    x.fillStyle = '#2b2350'; x.font = `900 56px ${F}`; x.fillText('점', 860, 290); x.font = `900 60px ${F}`; x.fillStyle = '#22c3a0'; x.fillText(r.grade, 600, 400);
+    x.fillStyle = '#2b2350'; x.font = `700 34px ${F}`; x.fillText(r.chips.slice(0, 3).join('   '), 600, 490); x.fillStyle = '#9a93b8'; x.font = `700 24px ${F}`; x.fillText(location.host || GAME_ID, 600, 596);
+    c.toBlob((b) => { if (!b) { toast('이미지를 만들지 못했어요'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `${GAME_ID}-card.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); });
+  } catch (e) { toast('카드를 저장하지 못했어요'); }
+}
+
+// ===== 입력 =====
+function toTitle() { show('TITLE'); buildTitle(); G = G && G.over ? G : null; }
+function homePress() {
+  if (state === 'PLAYING' && G && !G.over && G.filled > 0) { const now = performance.now(); if (now - homeArmed < 3000) { homeArmed = -1e9; toTitle(); } else { homeArmed = now; toast('한 번 더 누르면 처음 화면으로 나가요'); } } else toTitle();
+}
+$('btnHome').onclick = homePress; $('btnPause').onclick = () => pause(state !== 'PAUSED'); $('btnResume').onclick = () => pause(false); $('btnQuit').onclick = () => { G = null; toTitle(); };
+$('tMemo').onclick = () => { if (G) { G.memo = !G.memo; Snd.tap(); paint(); } }; $('tUndo').onclick = undo; $('tHint').onclick = hint;
+$('tChain').onclick = () => { if (G) { G.chain = !G.chain; G.armed = 0; Snd.tap(); toast(G.chain ? '연속 입력: 숫자를 고르고 빈칸을 연달아 탭!' : '연속 입력 끔'); paint(); } };
+document.querySelectorAll('.bSnd').forEach(b => { b.onclick = () => { Snd.init(); Snd.toggle(); }; });
+$('mHeart').onclick = () => { practice = false; store.set(K.mode, false); buildTitle(); }; $('mPractice').onclick = () => { practice = true; store.set(K.mode, true); buildTitle(); };
+$('rsAgain').onclick = () => start(lastLevel); $('rsRetry').onclick = () => start(lastLevel, G && G.puzzle); $('rsHome').onclick = () => { G = null; toTitle(); }; $('rsCopy').onclick = copyText; $('rsCard').onclick = saveCard;
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.code === 'KeyM') { Snd.init(); Snd.toggle(); return; }
+  if (state === 'PLAYING' || state === 'PAUSED') {
+    if (e.code === 'KeyP' || e.code === 'Escape') { pause(state !== 'PAUSED'); return; } if (state === 'PAUSED') return;
+    const n = G.L.n, dm = /^(Digit|Numpad)([0-9])$/.exec(e.code);
+    if (dm) { const d = +dm[2]; if (d === 0) erase(); else if (d <= n) { e.preventDefault(); tapNum(d); } return; }
+    if (e.code === 'Backspace' || e.code === 'Delete') { e.preventDefault(); erase(); return; }
+    if (e.code === 'KeyN') { G.memo = !G.memo; paint(); return; } if (e.code === 'KeyU') { undo(); return; } if (e.code === 'KeyH') { hint(); return; }
+    const mv = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.code];
+    if (mv) { e.preventDefault(); const cur = G.sel < 0 ? 0 : G.sel, r = clamp(((cur / n) | 0) + mv[0], 0, n - 1), c = clamp(cur % n + mv[1], 0, n - 1); G.sel = G.sel < 0 ? 0 : r * n + c; Snd.tap(); paint(); }
+  } else if ((e.code === 'Enter' || e.code === 'Space') && !(e.target && e.target.tagName === 'BUTTON')) {
+    e.preventDefault(); if (state === 'TITLE') start(2); else $('rsAgain').click();
+  }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); });
+window.addEventListener('resize', fit); window.addEventListener('orientationchange', fit);
+
+// ===== 시작 =====
+setInterval(() => { try { tick(); } catch (e) { /* 한 번의 오류로 멈추지 않게 */ } }, 250);
+fit(); paintSnd(); buildTitle(); show('TITLE');
+// ===== 끝 =====
+})();
+</script>
+</body>
+</html>

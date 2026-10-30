@@ -40,10 +40,10 @@ button{font:inherit;color:inherit}
 
 /* 로비 */
 .sign{margin:10px auto 0;text-align:center}
-.sign h1{font-size:clamp(46px,14vw,70px);font-weight:900;line-height:1.04;letter-spacing:-.02em;color:#fff;text-shadow:0 0 12px var(--pink),0 0 32px var(--pink),0 0 60px #9b6bff}
+.sign h1{font-size:clamp(40px,min(14vw,calc(var(--appH,100dvh) * .09)),70px);font-weight:900;line-height:1.04;letter-spacing:-.02em;color:#fff;text-shadow:0 0 12px var(--pink),0 0 32px var(--pink),0 0 60px #9b6bff}
 .sign p{margin-top:8px;color:var(--mute);font-size:clamp(14px,4vw,17px);letter-spacing:.06em}
-.machines{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
-.mcard{position:relative;min-height:clamp(132px,21dvh,190px);padding:14px 12px;border:0;border-radius:22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+.machines{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:clamp(8px,2.4dvh,20px)}
+.mcard{position:relative;min-height:clamp(100px,calc(var(--appH,100dvh) * .17),170px);padding:14px 12px;border:0;border-radius:22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
 .mcard .em{font-size:40px;line-height:1}
 .mcard b{font-size:19px}.mcard small{color:var(--mute);font-size:13px;font-weight:700;overflow-wrap:anywhere}
 button.mcard{cursor:pointer;color:#fff;box-shadow:0 0 0 3px var(--cyan),0 0 28px rgba(61,245,255,.55)}
@@ -1354,7 +1354,7 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); Music.sync(); });
 // 앱 안 브라우저는 100dvh를 몰라 아래 버튼이 가려지므로, 실제 보이는 높이를 직접 재서 쓴다
-const fitH = () => { try { document.documentElement.style.setProperty('--appH', (window.innerHeight || 0) + 'px'); } catch (e) { /* 무시 */ } };
+const fitH = () => { try { document.documentElement.style.setProperty('--appH', Math.min(window.innerHeight || 9999, (window.visualViewport && window.visualViewport.height) || 9999, document.documentElement.clientHeight || 9999) + 'px'); } catch (e) { /* 무시 */ } };
 fitH(); window.addEventListener('resize', () => { fitH(); layout(); }); window.addEventListener('orientationchange', fitH);
 
 // ===== 종목 공통 도우미 =====

@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'heart-sudoku',
+    title: '하트 스도쿠',
+    desc: '초등 저학년용 4×4부터 어른용 9×9까지 5단계. 하트 3개와 콤보로 점수를 겨루는 스도쿠',
+    path: 'games/heart-sudoku/heart-sudoku.html',
+    icon: '💗',
+    colors: ['#ff5a8a', '#ffb62b'],
+    tags: ['퍼즐', '두뇌', '스도쿠'],
+    isNew: true,
+    hiKey: 'retro_heart-sudoku_hi',
+    hiLabel: (v) => (v && v.top ? `최고 ${Number(v.top).toLocaleString()}점` : '')
+  },
+  {
     id: 'ppojjak-arcade',
     title: '뽀짝 오락실',
     desc: '3D 인형뽑기, 와르르 코인 푸시푸시, 망치로 때리는 두더지 잡기, 펀치 머신까지! 레트로 음악과 함께 티켓을 모으는 오락실 4종',
