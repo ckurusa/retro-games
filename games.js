@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'ppojjak-arcade',
+    title: '뽀짝 오락실',
+    desc: '3D 인형뽑기, 와르르 코인 푸시푸시, 망치로 때리는 두더지 잡기, 펀치 머신까지! 레트로 음악과 함께 티켓을 모으는 오락실 4종',
+    path: 'games/ppojjak-arcade/ppojjak-arcade.html',
+    icon: '🧸',
+    colors: ['#ff4fd8', '#3df5ff'],
+    tags: ['아케이드', '3D', '미니게임 4종'],
+    isNew: true,
+    hiKey: 'retro_ppojjak-arcade_hi',
+    hiLabel: (v) => (v ? `한 판 최고 ${v}티켓` : '')
+  },
+  {
     id: 'jaenmal-hanpan',
     title: '잰말놀이 한판',
     desc: '회전판을 돌려 규칙을 정하고, 카드를 뽑아 잰말을 소리 내어 말하는 온 가족 보드게임',
