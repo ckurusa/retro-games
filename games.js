@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'sky2026',
+    title: 'SKY2026',
+    desc: '적의 탄막을 아슬아슬하게 스치고, 게이지가 차면 한 번에 되받아쳐 황금 유도탄으로! 앞뒤좌우로 날아다니는 하늘 슈팅. 스테이지가 오를수록 어려워져요',
+    path: 'games/sky2026/sky2026.html',
+    icon: '🛩️',
+    colors: ['#37e6ff', '#6f8bff'],
+    tags: ['아케이드', '슈팅', '탄막'],
+    isNew: true,
+    hiKey: 'retro_sky2026_hi',
+    hiLabel: (v) => (v ? `최고 ${Number(v).toLocaleString()}점` : '')
+  },
+  {
     id: 'heart-sudoku',
     title: '하트 스도쿠',
     desc: '초등 저학년용 4×4부터 어른용 9×9까지 5단계. 하트 3개와 콤보로 점수를 겨루는 스도쿠',
