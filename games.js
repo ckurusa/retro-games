@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'todak-zoo',
+    title: '토닥토닥 숲 동물원',
+    desc: '문 닫은 숲 동물원을 동물 친구들과 되살려요! 3D 마을을 걸으며 친구를 쓰다듬고, 숲길을 탐험해 새 친구를 사귀고, 우리를 하나씩 열어 보세요. 실패 없이 느긋하게',
+    path: 'games/todak-zoo/todak-zoo.html',
+    icon: '🦔',
+    colors: ['#7fdc6a', '#3fae8a'],
+    tags: ['3D', '동물 키우기', '탐험'],
+    isNew: true,
+    hiKey: 'retro_todak-zoo_hi',
+    hiLabel: (v) => (v ? `열린 구역 ${Number(v)}/6` : '')
+  },
+  {
     id: 'sky2026',
     title: 'SKY2026',
     desc: '적의 탄막을 아슬아슬하게 스치고, 게이지가 차면 한 번에 되받아쳐 황금 유도탄으로! 앞뒤좌우로 날아다니는 하늘 슈팅. 스테이지가 오를수록 어려워져요',
