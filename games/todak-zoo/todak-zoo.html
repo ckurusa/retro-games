@@ -1009,6 +1009,7 @@ function beginFork(k) {
     }
     const g = makeSign(kd.type, emoji), p = curve.getPointAt(0.2), mid = E.curves[k][0].getPointAt(0.2), asp = innerWidth / innerHeight, K2 = asp < 1 ? 1 + (1 - asp) * 2 : 1, fov = (asp < 1 ? 46 + (1 - asp) * 26 : 46) * Math.PI / 180, hw = Math.tan(fov / 2) * asp * (8.2 * K2 + 5), spc = clampN(hw * 0.7, 1.7, 4.6); g.position.set(mid.x + kd.side * spc, 0, p.z); g.userData.base = g.position.y; E.sc.add(g); E.signs.push({ g, curve, type: kd.type, side: kd.side, wild });
   });
+  { const mx = E.signs.reduce((a, s) => a + s.g.position.x, 0) / (E.signs.length || 1), dx = mx - E.comp.position.x; E.pan = -E.dir.z * dx * 0 + (-E.dir.z) * dx; }
   E.phase = 'choose'; E.t = 0; refreshExHud();
   $('exHint').textContent = k === 0 && E.first ? '가고 싶은 길의 표지판을 탭해요 👆' : '어느 길로 갈까요? 👆';
 }
@@ -1118,7 +1119,7 @@ function updateExplore(dt) {
   let want, look;
   const c = E.comp.position, d = E.dir, asp = innerWidth / innerHeight, K = asp < 1 ? 1 + (1 - asp) * 1.1 : 1;
   if (E.camBF && E.spot) { const nrm = new THREE.Vector3(-E.tan.z, 0, E.tan.x); want = E.spot.clone().addScaledVector(nrm, 5.2 * K).add(new THREE.Vector3(0, 2.2 * K, 0)); look = E.spot.clone().add(new THREE.Vector3(0, 0.8, 0)); }
-  else if (E.phase === 'choose') { const K2 = asp < 1 ? 1 + (1 - asp) * 2 : 1; want = c.clone().addScaledVector(d, -8.2 * K2).add(new THREE.Vector3(0, 5.6 * K2, 0)); look = c.clone().addScaledVector(d, 6).add(new THREE.Vector3(0, 0.8, 0)); }
+  else if (E.phase === 'choose') { const K2 = asp < 1 ? 1 + (1 - asp) * 2 : 1; const rt = new THREE.Vector3(-d.z, 0, d.x).multiplyScalar(E.pan || 0); want = c.clone().addScaledVector(d, -8.2 * K2).add(new THREE.Vector3(0, 5.6 * K2, 0)).add(rt); look = c.clone().addScaledVector(d, 6).add(new THREE.Vector3(0, 0.8, 0)).add(rt); }
   else if (E.phase === 'event') { const nrm = new THREE.Vector3(-E.tan.z, 0, E.tan.x); want = E.spot.clone().addScaledVector(nrm, 5.2 * K).addScaledVector(E.tan, -1).add(new THREE.Vector3(0, 2.6 * K, 0)); look = E.spot.clone().add(new THREE.Vector3(0, 0.7, 0)); }
   else { want = c.clone().addScaledVector(d, -7.4 * K).add(new THREE.Vector3(0, 4.4 * K, 0)); look = c.clone().addScaledVector(d, 3.2).add(new THREE.Vector3(0, 1, 0)); }
   E.camPos.lerp(want, 1 - Math.exp(-4.5 * dt)); E.cam.position.copy(E.camPos); E.lookAt = (E.lookAt || look.clone()).lerp(look, 1 - Math.exp(-6 * dt)); E.cam.lookAt(E.lookAt);
@@ -1471,7 +1472,7 @@ function closeMenu() { hideScreens(); G.paused = false; }
 function bindUI() {
   const cv = $('cv');
   cv.addEventListener('pointerdown', (e) => { Snd.init(); G.drag = { x: e.clientX, y: e.clientY, lx: e.clientX, moved: false, id: e.pointerId }; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* 무시 */ } });
-  cv.addEventListener('pointermove', (e) => { const d = G.drag; if (!d) return; if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 14) d.moved = true; if (d.moved && G.where === 'village') { G.angT -= (e.clientX - d.lx) * 0.006; G.ang = G.angT; } d.lx = e.clientX; });
+  cv.addEventListener('pointermove', (e) => { const d = G.drag; if (!d) return; if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 14) d.moved = true; if (d.moved && G.where === 'village') { G.angT -= (e.clientX - d.lx) * 0.006; G.ang = G.angT; } if (d.moved && G.where === 'explore' && EXP.phase === 'choose') EXP.pan = clampN((EXP.pan || 0) - (e.clientX - d.lx) * 0.03, -12, 12); d.lx = e.clientX; });
   const up = (e) => { const d = G.drag; G.drag = null; if (!d || d.moved || G.paused) return; if (G.where === 'village') villageTap(e.clientX, e.clientY); else if (G.where === 'explore') { if (G.talk) talkNext(); else exploreTap(e.clientX, e.clientY); } };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { G.drag = null; });
   $('talk').addEventListener('pointerdown', (e) => { e.preventDefault(); Snd.init(); talkNext(); });
