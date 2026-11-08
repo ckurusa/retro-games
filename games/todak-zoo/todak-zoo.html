@@ -1007,7 +1007,7 @@ function beginFork(k) {
       const sps = kd.type === 'secret' ? 'hedgehog' : wsp; wild = randomGenome(sps, 0.02, S.friends.map((f) => f.gn)); if (kd.type === 'secret') wild = randomGenome('hedgehog', 0.3, S.friends.map((f) => f.gn));
       if (kd.type === 'friend' && sp === 'parrot') emoji = SP_INFO[wild.sp].icon + (isRare(wild) ? '✨' : '');
     }
-    const g = makeSign(kd.type, emoji), p = curve.getPointAt(0.2); g.position.copy(p).add(new THREE.Vector3(kd.side * 0.9, 0, 0)); g.userData.base = g.position.y; E.sc.add(g); E.signs.push({ g, curve, type: kd.type, side: kd.side, wild });
+    const g = makeSign(kd.type, emoji), p = curve.getPointAt(0.2), mid = E.curves[k][0].getPointAt(0.2), asp = innerWidth / innerHeight, K2 = asp < 1 ? 1 + (1 - asp) * 2 : 1, fov = (asp < 1 ? 46 + (1 - asp) * 26 : 46) * Math.PI / 180, hw = Math.tan(fov / 2) * asp * (8.2 * K2 + 5), spc = clampN(hw * 0.7, 1.7, 4.6); g.position.set(mid.x + kd.side * spc, 0, p.z); g.userData.base = g.position.y; E.sc.add(g); E.signs.push({ g, curve, type: kd.type, side: kd.side, wild });
   });
   E.phase = 'choose'; E.t = 0; refreshExHud();
   $('exHint').textContent = k === 0 && E.first ? '가고 싶은 길의 표지판을 탭해요 👆' : '어느 길로 갈까요? 👆';
@@ -1100,7 +1100,7 @@ function finishBefriend() {
 }
 // ===== 탐험 업데이트 =====
 function updateExplore(dt) {
-  const E = EXP; if (!E.on) return; E.t += dt; const t = performance.now() / 1000;
+  const E = EXP; if (!E.on) return; E.t += dt; const t = performance.now() / 1000; { const a0 = innerWidth / innerHeight, fv = a0 < 1 ? 46 + (1 - a0) * 26 : 46; if (Math.abs(E.cam.fov - fv) > 0.01) { E.cam.fov = fv; E.cam.updateProjectionMatrix(); } }
   fxUpdate(dt); SWAY_T.value = t;
   if (E.fireflies) { const a = E.fireflies.pts.geometry.attributes.position, b = E.fireflies.base; for (let i = 0; i < E.fireflies.seeds.length; i++) { const s = E.fireflies.seeds[i]; a.setXYZ(i, b[i * 3] + Math.sin(t * 0.7 + s) * 1.2, b[i * 3 + 1] + Math.sin(t * 1.3 + s * 2) * 0.5, b[i * 3 + 2] + Math.cos(t * 0.6 + s) * 1.2); } a.needsUpdate = true; E.fireflies.pts.material.opacity = 0.8 + Math.sin(t * 3) * 0.2; }
   E.signs.forEach((s, i) => { const sel = E.phase === 'choose' && i === E.sel; s.g.position.y = (s.g.userData.base || 0) + Math.sin(t * 2 + i) * 0.06; const k = sel ? 1.25 + Math.sin(t * 6) * 0.06 : 1; s.g.userData.sp.scale.set(1.9 * k, 1.9 * k, 1); });
@@ -1118,7 +1118,7 @@ function updateExplore(dt) {
   let want, look;
   const c = E.comp.position, d = E.dir, asp = innerWidth / innerHeight, K = asp < 1 ? 1 + (1 - asp) * 1.1 : 1;
   if (E.camBF && E.spot) { const nrm = new THREE.Vector3(-E.tan.z, 0, E.tan.x); want = E.spot.clone().addScaledVector(nrm, 5.2 * K).add(new THREE.Vector3(0, 2.2 * K, 0)); look = E.spot.clone().add(new THREE.Vector3(0, 0.8, 0)); }
-  else if (E.phase === 'choose') { want = c.clone().addScaledVector(d, -8.2 * K).add(new THREE.Vector3(0, 5.6 * K, 0)); look = c.clone().addScaledVector(d, 6).add(new THREE.Vector3(0, 0.8, 0)); }
+  else if (E.phase === 'choose') { const K2 = asp < 1 ? 1 + (1 - asp) * 2 : 1; want = c.clone().addScaledVector(d, -8.2 * K2).add(new THREE.Vector3(0, 5.6 * K2, 0)); look = c.clone().addScaledVector(d, 6).add(new THREE.Vector3(0, 0.8, 0)); }
   else if (E.phase === 'event') { const nrm = new THREE.Vector3(-E.tan.z, 0, E.tan.x); want = E.spot.clone().addScaledVector(nrm, 5.2 * K).addScaledVector(E.tan, -1).add(new THREE.Vector3(0, 2.6 * K, 0)); look = E.spot.clone().add(new THREE.Vector3(0, 0.7, 0)); }
   else { want = c.clone().addScaledVector(d, -7.4 * K).add(new THREE.Vector3(0, 4.4 * K, 0)); look = c.clone().addScaledVector(d, 3.2).add(new THREE.Vector3(0, 1, 0)); }
   E.camPos.lerp(want, 1 - Math.exp(-4.5 * dt)); E.cam.position.copy(E.camPos); E.lookAt = (E.lookAt || look.clone()).lerp(look, 1 - Math.exp(-6 * dt)); E.cam.lookAt(E.lookAt);
@@ -1411,7 +1411,7 @@ function openRegions() {
   REGIONS.forEach((r) => { const lock = n < r.need, b = document.createElement('button'); b.className = 'cd' + (lock ? ' lock' : ''); b.innerHTML = `<div style="font-size:54px;padding:14px 0">${lock ? '🔒' : r.icon}</div><b>${r.name}</b><i>${lock ? `친구 ${r.need}마리 필요` : r.info}</i>`; b.onclick = () => { if (lock) { toast(`친구가 ${r.need}마리 이상 되면 열려요 (지금 ${n}마리)`); Snd.miss(); return; } beginExplore(r.id); }; box.appendChild(b); });
   $('regionInfo').textContent = `친구 ${n}마리 · 지역은 친구가 늘면 새로 열려요`; show('scRegion'); Snd.tap();
 }
-function beginExplore(ri) { hideScreens(); hideBubble(); Snd.rain(false); stopWeather(); fadeTo(() => { G.where = 'explore'; setHud('explore'); startExplore(ri); resize(); }); }
+function beginExplore(ri) { hideScreens(); hideBubble(); Snd.rain(false); stopWeather(); fadeTo(() => { G.paused = false; G.where = 'explore'; setHud('explore'); startExplore(ri); resize(); }); }
 function exploreFinished(res, region) {
   G.where = 'result'; S.snacks += res.snacks; S.trips++; if (S.quest < 4) S.quest = 4; S.hearts = clampN(S.hearts, 0, 5); save(); setHud('none'); Snd.mood('village'); Snd.good();
   $('resTitle').textContent = res.friends.length ? '새 친구가 생겼어요!' : '탐험 끝!'; const box = $('resCards'); box.innerHTML = '';
@@ -1484,7 +1484,7 @@ function bindUI() {
   on('btnToVillage', () => { hideScreens(); G.paused = false; if (BF.on) { BF.on = false; $('bf').hidden = true; } finishExploreRun(); });
   on('btnToTitle', () => { G.paused = false; if (G.where === 'explore') { S.snacks += EXP.res.snacks; save(); exitExplore(); } Snd.rain(false); stopWeather(); showTitle(); });
   on('btnDex', () => { G.paused = true; openDex(); }); on('btnDexClose', () => { hideScreens(); G.paused = false; });
-  on('btnExplore', () => { if (G.busy || G.talk) return; openRegions(); G.paused = true; }); on('btnRegionBack', () => { hideScreens(); G.paused = false; });
+  on('btnExplore', () => { if (G.busy || G.talk) return; G.paused = true; openRegions(); }); on('btnRegionBack', () => { hideScreens(); G.paused = false; });
   on('btnResultOk', leaveResult); on('btnTalk', () => { if (!G.busy) walkNear(TURTLE_POS.x, TURTLE_POS.z, turtleTalk); });
   on('bPet', () => G.bubbleFor && doPet(G.bubbleFor)); on('bFeed', () => G.bubbleFor && doFeed(G.bubbleFor)); on('bSwitch', () => G.bubbleFor && doSwitch(G.bubbleFor));
   on('camL', () => { G.angT += 0.7854; Snd.tap(); }); on('camR', () => { G.angT -= 0.7854; Snd.tap(); });
