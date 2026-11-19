@@ -4,11 +4,11 @@ window.GAMES = [
   {
     id: 'slide-picture',
     title: '조각조각 그림 마을',
-    desc: '섞인 그림 조각을 밀어서 맞추는 슬라이딩 퍼즐! 귀여운 동물과 풍경 8장, 3×3부터 5×5까지. 완성하면 그림이 살아 움직여요',
+    desc: '유명한 명화 40점을 밀어서 맞추는 슬라이딩 퍼즐! 3×3부터 6×6까지, 완성하면 명화가 살아나고 도감에 모여요',
     path: 'games/slide-picture/slide-picture.html',
     icon: '🧩',
     colors: ['#ffb347', '#ff7aa8'],
-    tags: ['퍼즐', '슬라이딩', '쉬움'],
+    tags: ['퍼즐', '슬라이딩', '명화'],
     isNew: true,
     hiKey: 'retro_slide-picture_hi',
     hiLabel: (v) => (v ? `모은 별 ⭐${Number(v)}개` : '')
