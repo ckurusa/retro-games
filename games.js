@@ -2,6 +2,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'slide-picture',
+    title: '조각조각 그림 마을',
+    desc: '섞인 그림 조각을 밀어서 맞추는 슬라이딩 퍼즐! 귀여운 동물과 풍경 8장, 3×3부터 5×5까지. 완성하면 그림이 살아 움직여요',
+    path: 'games/slide-picture/slide-picture.html',
+    icon: '🧩',
+    colors: ['#ffb347', '#ff7aa8'],
+    tags: ['퍼즐', '슬라이딩', '쉬움'],
+    isNew: true,
+    hiKey: 'retro_slide-picture_hi',
+    hiLabel: (v) => (v ? `모은 별 ⭐${Number(v)}개` : '')
+  },
+  {
     id: 'todak-zoo',
     title: '토닥토닥 숲 동물원',
     desc: '문 닫은 숲 동물원을 동물 친구들과 되살려요! 3D 마을을 걸으며 친구를 쓰다듬고, 숲길을 탐험해 새 친구를 사귀고, 우리를 하나씩 열어 보세요. 실패 없이 느긋하게',
