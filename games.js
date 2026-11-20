@@ -1,4 +1,5 @@
 // 게임 목록. 새 게임은 games/<id>/ 폴더를 만들고 여기에 한 항목만 추가하면 허브에 카드가 생긴다.
+// locked: true 이면 허브에서 잠금(준비 중) 카드로 맨 아래에 보인다.
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
@@ -21,7 +22,8 @@ window.GAMES = [
     icon: '🦔',
     colors: ['#7fdc6a', '#3fae8a'],
     tags: ['3D', '동물 키우기', '탐험'],
-    isNew: true,
+    isNew: false,
+    locked: true, // 미완성: 허브에서 잠금 표시(누를 수 없고 목록 맨 아래로 내려감)
     hiKey: 'retro_todak-zoo_hi',
     hiLabel: (v) => (v ? `열린 구역 ${Number(v)}/6` : '')
   },

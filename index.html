@@ -36,6 +36,8 @@ header p{margin:10px 0 0;color:var(--mute);font-size:clamp(14px,2.2vw,18px)}
 .tag{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--card2);color:var(--mute)}
 .hi{position:relative;color:var(--gold);font-weight:700;font-size:13px;min-height:1.2em}
 .new{position:absolute;right:14px;top:14px;background:#e11d48;color:#fff;font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px}
+.card.locked{cursor:not-allowed;filter:grayscale(.85);opacity:.6} .card.locked:hover{transform:none;border-color:var(--line);box-shadow:none} .card.locked:active{transform:none}
+.lock{position:absolute;right:14px;top:14px;background:#475569;color:#fff;font-weight:800;font-size:12px;padding:4px 10px;border-radius:999px}
 .empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px 0}
 footer{margin-top:30px;text-align:center;color:var(--mute);font-size:13px;line-height:1.7}
 /* 앱 설치 안내 */
@@ -83,14 +85,14 @@ footer{margin-top:30px;text-align:center;color:var(--mute);font-size:13px;line-h
   'use strict';
   const grid = document.getElementById('grid');
   const readHi = (g) => { try { const v = localStorage.getItem(g.hiKey); return v ? JSON.parse(v) : 0; } catch (e) { return 0; } };
-  const list = window.GAMES || [];
+  const list = (window.GAMES || []).map((g, i) => [g, i]).sort((a, b) => (!!a[0].locked - !!b[0].locked) || (a[1] - b[1])).map((x) => x[0]); // 잠긴 게임은 맨 아래로
   if (!list.length) grid.innerHTML = '<div class="empty">아직 등록된 게임이 없어요.</div>';
   list.forEach(g => {
-    const a = document.createElement('a'); a.className = 'card'; a.href = g.path;
+    const a = document.createElement(g.locked ? 'div' : 'a'); a.className = 'card' + (g.locked ? ' locked' : ''); if (g.locked) a.setAttribute('aria-disabled', 'true'); else a.href = g.path;
     a.style.setProperty('--c1', g.colors[0]); a.style.setProperty('--c2', g.colors[1]);
-    const hi = g.hiKey ? readHi(g) : 0;
+    const hi = g.hiKey && !g.locked ? readHi(g) : 0;
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
-    if (g.isNew) a.appendChild(el('span', 'new', 'NEW'));
+    if (g.locked) a.appendChild(el('span', 'lock', '🔒 준비 중')); else if (g.isNew) a.appendChild(el('span', 'new', 'NEW'));
     a.appendChild(el('div', 'ic', g.icon)); a.appendChild(el('h2', '', g.title)); a.appendChild(el('p', '', g.desc));
     const meta = el('div', 'meta'); g.tags.forEach(t => meta.appendChild(el('span', 'tag', t))); a.appendChild(meta);
     a.appendChild(el('div', 'hi', hi && g.hiLabel ? g.hiLabel(hi) : ''));
