@@ -139,7 +139,7 @@ a.hubLink{display:inline-flex;align-items:center;justify-content:center;min-heig
     </div>
     <div id="dpad"><button id="dU" aria-label="위">▲</button><button id="dL" aria-label="왼쪽">◀</button><button id="dD" aria-label="아래">▼</button><button id="dR" aria-label="오른쪽">▶</button></div>
   </div>
-  <p id="tip">탭하면 그곳까지 걸어가요 · 방향키/WASD · 1~4 아이템 · P 일시정지</p>
+  <p id="tip">가까운 길(4칸까지)을 탭하면 걸어가요 · 방향키/WASD · 1~4 아이템 · P 일시정지</p>
 </section>
 
 <section class="screen over" id="scPause" hidden>
@@ -167,6 +167,7 @@ const TS = 48, VIEW = 9, VPX = TS * VIEW;       // 타일 크기, 화면에 보�
 const MOVE_T = 0.125, BOOT_MULT = 0.55;         // 한 칸 이동 시간, 번개 신발 배율
 const FLASH_TIME = 12, MAP_TIME = 5, BOOT_TIME = 8, FLASH_BONUS = 4, INVUL = 1.6;
 const MAX_HEARTS = 5, START_HEARTS = 3;
+const TAP_MAX = 4;                              // 탭으로 자동 이동할 수 있는 최대 칸 수(멀리는 직접 조작)
 const FIRE_CYCLE = 3.0, FIRE_WARN_AT = 1.4, FIRE_ON_AT = 1.9;  // 꺼짐 1.4초, 경고 0.5초, 켜짐 1.1초
 const CLS_SIZES = [{ c: 8, n: '작은 미로' }, { c: 12, n: '보통 미로' }, { c: 16, n: '큰 미로' }, { c: 20, n: '특대 미로' }];
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
@@ -440,7 +441,7 @@ function newLevel(spec, seed) {
 function startAdventure(L) { G.mode = 'adv'; G.L = L; G.hearts = START_HEARTS; G.score = 0; newLevel(levelSpec(L), (Math.random() * 1e9) | 0); showScreen('game'); layout(); setGoal(); }
 function startChallenge() { G.mode = 'chal'; G.depth = 1; G.hearts = START_HEARTS; G.score = 0; G.coins = 0; G.inv = { flash: 0, map: 0, hammer: 0, boots: 0 }; newLevel(levelSpec(3 + G.depth), (Math.random() * 1e9) | 0); showScreen('game'); layout(); setGoal(); }
 function startClassic(cells) { G.mode = 'cls'; G.clsCells = cells; G.hearts = 99; newLevel(classicSpec(cells, G.clsFog), (Math.random() * 1e9) | 0); showScreen('game'); layout(); setGoal(); }
-function setGoal() { const sp = G.LV.spec; $('goal').textContent = G.mode === 'cls' ? '출구(🌀)를 찾아요!' : sp.L === 1 ? '🌀 출구를 찾아요! 화면을 탭하면 걸어가요' : sp.L === 2 ? '🗺️ 지도로 출구 길을 볼 수 있어요' : sp.L === 3 ? '🌫️ 안개! 🔦 손전등으로 멀리 보기' : sp.L === 4 ? '🔑 열쇠로 같은 색 문을 열어요' : sp.L === 6 ? '🔥 불길은 꺼졌을 때 지나가요' : sp.L === 9 ? '👻 유령에게 잡히지 마요!' : ''; setTimeout(() => { if ($('goal').textContent) $('goal').textContent = ''; }, 5000); }
+function setGoal() { const sp = G.LV.spec; $('goal').textContent = G.mode === 'cls' ? '출구(🌀)를 찾아요!' : sp.L === 1 ? '🌀 출구를 찾아요! 가까운 길을 탭하면 걸어가요' : sp.L === 2 ? '🗺️ 지도로 출구 길을 볼 수 있어요' : sp.L === 3 ? '🌫️ 안개! 🔦 손전등으로 멀리 보기' : sp.L === 4 ? '🔑 열쇠로 같은 색 문을 열어요' : sp.L === 6 ? '🔥 불길은 꺼졌을 때 지나가요' : sp.L === 9 ? '👻 유령에게 잡히지 마요!' : ''; setTimeout(() => { if ($('goal').textContent) $('goal').textContent = ''; }, 5000); }
 
 // ===== 시야와 안개 =====
 function los(x0, y0, x1, y1) {
@@ -635,7 +636,18 @@ function drawGame() {
   G.particles.forEach((p) => { g.globalAlpha = clamp(p.life * 2, 0, 1); g.fillStyle = p.c; circ(g, p.x + ox, p.y + oy, 3); g.fill(); }); g.globalAlpha = 1;
   if (G.hurtFlash > 0) { g.fillStyle = `rgba(255,60,60,${Math.min(0.6, G.hurtFlash * 1.2)})`; g.fillRect(0, 0, VPX, VPX); }
   if (G.flashT > 0 && G.flashT < 3 && (Math.floor(t * 6) & 1)) { g.fillStyle = 'rgba(255,230,120,.12)'; g.fillRect(0, 0, VPX, VPX); }
-  drawMini();
+  drawMini(); placeMini(ox, oy, px, py);
+}
+// 미니맵이 출구나 내 캐릭터를 가리지 않게, 가리면 다른 모서리로 옮긴다
+let miniCorner = 0;
+function placeMini(ox, oy, px, py) {
+  const LV = G.LV, wrap = cv.clientWidth; if (!wrap) return; const u = VPX / wrap, mw = (mini.offsetWidth + 10) * u, mh = (mini.offsetHeight + 10) * u, m = 6 * u;
+  const pts = [[px + 0.5, py + 0.5], [LV.exit % LV.W + 0.5, ((LV.exit / LV.W) | 0) + 0.5]].map(([x, y]) => [x * TS + ox, y * TS + oy]);
+  const rect = (c) => { const r = c === 0 || c === 2, b = c < 2; return [r ? VPX - m - mw : m, b ? VPX - m - mh : m, r ? VPX - m : m + mw, b ? VPX - m : m + mh]; }; // 0 우하, 1 좌하, 2 우상, 3 좌상 (0,2 오른쪽)
+  const free = (c) => { const [a, b, c2, d] = rect(c === 1 ? 1 : c === 3 ? 3 : c); return pts.every(([x, y]) => !(x > a - TS * 0.6 && x < c2 + TS * 0.6 && y > b - TS * 0.6 && y < d + TS * 0.6)); };
+  if (!free(miniCorner)) { for (const c of [0, 1, 2, 3]) if (free(c)) { miniCorner = c; break; } }
+  const right = miniCorner === 0 || miniCorner === 2, bottom = miniCorner < 2;
+  mini.style.right = right ? '6px' : 'auto'; mini.style.left = right ? 'auto' : '6px'; mini.style.bottom = bottom ? '6px' : 'auto'; mini.style.top = bottom ? 'auto' : '6px';
 }
 
 // ===== 화면과 화면 요소 =====
@@ -691,7 +703,7 @@ function showResult(win) {
   $('cardCv').hidden = G.mode === 'adv' && !win;
   if (G.mode === 'adv') { title.textContent = win ? `${G.L}층 탈출 성공!` : '하트가 다 떨어졌어요'; next.textContent = win ? `${G.L + 1}층으로 ▶` : '다시 도전 ▶'; msg.textContent = win ? (G.newBest ? '🎉 별 기록을 새로 썼어요!' : `별 ${'⭐'.repeat(G.stars)}`) : '새 미로가 나와요. 다시 해 봐요!'; }
   else if (G.mode === 'chal') { if (win) { title.textContent = `${G.depth}층 탈출!`; next.textContent = `${G.depth + 1}층으로 ▶`; msg.textContent = `하트 ${G.hearts}개 · 점수 ${G.score}`; } else { title.textContent = `게임 오버 · ${G.depth - 1}층까지`; next.textContent = '다시 도전 ▶'; msg.textContent = G.newBest ? '🎉 최고 기록이에요!' : `최고 기록 ${bestDepth}층`; } }
-  else { title.textContent = '탈출 성공!'; next.textContent = '한 번 더 ▶'; msg.textContent = G.newBest ? `🎉 새 기록! ${fmt(G.time)}` : `이 크기 최고 ${fmt(clsSave.best[G.clsCells] || G.time)}`; }
+  else { const ci = CLS_SIZES.findIndex((s) => s.c === G.clsCells), more = win && ci < CLS_SIZES.length - 1; title.textContent = win ? `${CLS_SIZES[ci].n} 탈출 성공!` : '탈출 성공!'; next.textContent = more ? `${CLS_SIZES[ci + 1].n}로 ▶` : '한 번 더 ▶'; msg.textContent = G.newBest ? `🎉 새 기록! ${fmt(G.time)}` : `이 크기 최고 ${fmt(clsSave.best[G.clsCells] || G.time)}`; }
   $('btnSave').hidden = $('btnCopy').hidden = $('cardCv').hidden;
 }
 function shareText() { const lb = G.mode === 'cls' ? CLS_SIZES.find((s) => s.c === G.clsCells).n : G.mode === 'chal' ? `도전 ${G.depth}층` : `모험 ${G.L}층`; return `🧭 미로 탈출 대모험 · ${lb} ${G.mode !== 'cls' ? '⭐'.repeat(G.stars) + ' ' : ''}⏱ ${fmt(G.time)}\n▶ https://ckurusa.github.io/retro-games/`; }
@@ -702,7 +714,7 @@ function nextAction() {
   else if (G.mode === 'chal') {
     if (G.state === 'CLEAR') { G.depth++; const keep = { hearts: G.hearts, coins: G.coins, score: G.score, inv: Object.assign({}, G.inv) }; newLevel(levelSpec(3 + G.depth), (Math.random() * 1e9) | 0); G.hearts = keep.hearts; G.coins = keep.coins; G.score = keep.score; G.inv = keep.inv; showScreen('game'); layout(); syncUI(); }
     else startChallenge();
-  } else startClassic(G.clsCells);
+  } else { const ci = CLS_SIZES.findIndex((s) => s.c === G.clsCells); startClassic(G.state === 'CLEAR' && ci < CLS_SIZES.length - 1 ? CLS_SIZES[ci + 1].c : G.clsCells); }
 }
 function pause(on) { if (on) { if (G.state !== 'PLAYING') return; G.state = 'PAUSED'; showScreen('pause'); $('btnPSnd').textContent = '소리: ' + (Snd.muted ? '꺼짐' : '켜짐'); } else if (G.state === 'PAUSED') { G.state = 'PLAYING'; showScreen('game'); } }
 function syncSnd() { $('btnSnd').textContent = Snd.muted ? '🔇' : '🔊'; $('btnPSnd').textContent = '소리: ' + (Snd.muted ? '꺼짐' : '켜짐'); }
@@ -726,7 +738,8 @@ function bindUI() {
     if (tx < 0 || ty < 0 || tx >= LV.W || ty >= LV.H) return; const idx = ty * LV.W + tx;
     if (LV.wall[idx]) { if (G.armed) { const dx = Math.sign(tx - P.x), dy = Math.sign(ty - P.y); if (Math.abs(tx - P.x) + Math.abs(ty - P.y) === 1) { tryMove(DIRS.findIndex((d) => d[0] === dx && d[1] === dy)); return; } } Snd.bump(); return; }
     if (!G.seen[idx]) { toast('아직 못 본 곳이에요'); return; }
-    const path = bfsKnown(idx); if (!path || !path.length) { if (!path) toast('그쪽으로는 길이 없어요'); return; } G.auto = path;
+    const path = bfsKnown(idx); if (!path || !path.length) { if (!path) toast('그쪽으로는 길이 없어요'); return; }
+    if (path.length > TAP_MAX) { toast(`탭은 ${TAP_MAX}칸 안쪽만 가요. 멀리는 방향으로 직접 가요`); Snd.bump(); return; } G.auto = path;
   });
   mini.addEventListener('pointerdown', (e) => { e.stopPropagation(); G.miniBig = !G.miniBig; });
   const hold = (id, d) => { const b = $(id); b.addEventListener('pointerdown', (e) => { e.preventDefault(); Snd.init(); G.held = d; b.classList.add('on'); }); const off = () => { if (G.held === d) G.held = -1; b.classList.remove('on'); }; ['pointerup', 'pointercancel', 'pointerleave'].forEach((n) => b.addEventListener(n, off)); };
