@@ -3,6 +3,18 @@
 // hiKey: 허브 카드에 보여 줄 하이스코어의 localStorage 키 (없으면 생략), hiLabel: 표시 문구
 window.GAMES = [
   {
+    id: 'maze-quest',
+    title: '미로 탈출 대모험',
+    desc: '안개 낀 미로에서 출구를 찾아라! 손전등·지도·망치·번개 신발을 모으고 열쇠 문·불길·유령을 피해 깊이 내려가는 도트 미로찾기. 클래식·모험·도전 3가지 모드',
+    path: 'games/maze-quest/maze-quest.html',
+    icon: '🧭',
+    colors: ['#ffd23f', '#7a5af8'],
+    tags: ['퍼즐', '미로', '모험'],
+    isNew: true,
+    hiKey: 'retro_maze-quest_hi',
+    hiLabel: (v) => (v ? `도전 최고 ${Number(v)}층` : '')
+  },
+  {
     id: 'slide-picture',
     title: '조각조각 그림 마을',
     desc: '유명한 명화 40점을 밀어서 맞추는 슬라이딩 퍼즐! 3×3부터 6×6까지, 완성하면 명화가 살아나고 도감에 모여요',
